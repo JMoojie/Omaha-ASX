@@ -12,7 +12,7 @@
   // STEP: create a KV namespace called "omaha-asx" in the Cloudflare dashboard
   // (Storage & Databases → KV → Create) and paste its ID below.
   "kv_namespaces": [
-    { "binding": "KV", "id": "PASTE_YOUR_KV_NAMESPACE_ID_HERE" }
+    { "binding": "KV", "id": "367081c22ad54a25b8fe4b36bffcebdd" }
   ],
 
   // Weekday evenings in Sydney, after the ASX closes: every 15 minutes from 06:00 to 12:45 UTC
