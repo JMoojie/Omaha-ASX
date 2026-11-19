@@ -1,0 +1,4 @@
+# Copy to .dev.vars for local testing with `npm run dev` (never commit .dev.vars)
+APP_PIN=change-me
+AV_KEY=your-alpha-vantage-key
+EODHD_KEY=your-eodhd-key

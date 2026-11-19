@@ -1,0 +1,29 @@
+{
+  // Omaha ASX — Cloudflare Workers config (free plan)
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "omaha-asx",
+  "main": "src/worker.js",
+  "compatibility_date": "2026-11-01",
+
+  // The game (HTML) is served as static assets — free and unlimited on Cloudflare.
+  "assets": { "directory": "./public", "binding": "ASSETS" },
+
+  // Storage for your saved game and the collected prices.
+  // STEP: create a KV namespace called "omaha-asx" in the Cloudflare dashboard
+  // (Storage & Databases → KV → Create) and paste its ID below.
+  "kv_namespaces": [
+    { "binding": "KV", "id": "PASTE_YOUR_KV_NAMESPACE_ID_HERE" }
+  ],
+
+  // Weekday evenings in Sydney, after the ASX closes: every 15 minutes from 06:00 to 12:45 UTC
+  // (5pm–11:45pm AEDT in summer, 4pm–10:45pm AEST in winter). Cron times are always UTC.
+  // Each run fetches a few prices, so the free daily quotas are spread out over the evening.
+  "triggers": { "crons": ["*/15 6-12 * * 1-5"] },
+
+  "observability": { "enabled": true }
+
+  // Secrets (set in the dashboard under Settings → Variables and Secrets, type "Secret"):
+  //   APP_PIN     any passphrase you choose — protects your saved game
+  //   AV_KEY      free Alpha Vantage key  (alphavantage.co/support/#api-key)
+  //   EODHD_KEY   free EODHD key          (eodhd.com — register, key is on your dashboard)
+}

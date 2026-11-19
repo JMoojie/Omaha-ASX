@@ -1,0 +1,1420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="omaha-host" content="cloudflare">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/icon.svg">
+<meta name="theme-color" content="#1c2f3f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Omaha ASX — Buffett Value Investing Game</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f4f1ea; --panel:#fffdf8; --ink:#1d2321; --muted:#66706b; --line:#e2ddd1;
+  --green:#1f6b4a; --green-soft:#e1f0e7; --amber:#a86a0c; --amber-soft:#fbefd6;
+  --red:#a83a2c; --red-soft:#f7e1dd; --gold:#b8892b; --navy:#1c2f3f; --grey-soft:#ecebe6;
+  --radius:14px; --shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.04);
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 Inter,system-ui,sans-serif}
+h1,h2,h3{font-family:Fraunces,Georgia,serif;font-weight:700;margin:0 0 .4em;letter-spacing:-.01em}
+h1{font-size:26px} h2{font-size:20px} h3{font-size:16px}
+.mono,.num{font-family:"JetBrains Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
+button{font:inherit;cursor:pointer;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:10px;padding:8px 14px;font-weight:600}
+button:hover{border-color:#c9c2b1}
+button.primary{background:var(--navy);color:#fff;border-color:var(--navy)}
+button.good{background:var(--green);color:#fff;border-color:var(--green)}
+button.bad{background:var(--red);color:#fff;border-color:var(--red)}
+button.ghost{background:transparent}
+button:disabled{opacity:.45;cursor:not-allowed}
+input,select,textarea{font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink);width:100%}
+textarea{min-height:80px;resize:vertical}
+label{font-size:12.5px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px}
+.app{display:grid;grid-template-columns:230px 1fr;min-height:100vh}
+nav.side{background:var(--navy);color:#e8ecef;padding:22px 14px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:4px}
+.brand{font-family:Fraunces,serif;font-size:21px;font-weight:700;padding:0 10px 4px;color:#fff}
+.brand small{display:block;font:500 11.5px Inter;color:#9fb1c0;letter-spacing:.04em;text-transform:uppercase;margin-top:2px}
+nav a{display:flex;align-items:center;gap:10px;color:#c9d4dc;text-decoration:none;padding:9px 12px;border-radius:9px;font-weight:500}
+nav a.on,nav a:hover{background:rgba(255,255,255,.1);color:#fff}
+nav .ico{width:20px;text-align:center}
+.side .foot{margin-top:auto;font-size:12px;color:#9fb1c0;padding:10px}
+main{padding:26px 30px 90px;max-width:1180px;width:100%}
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}
+.kpi .lbl{font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.kpi .val{font:600 24px "JetBrains Mono",monospace;margin-top:4px}
+.kpi .sub{font-size:13px;color:var(--muted)}
+.up{color:var(--green)} .down{color:var(--red)}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.between{justify-content:space-between}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-size:12.5px;font-weight:700;white-space:nowrap}
+.b-strong{background:var(--green);color:#fff}
+.b-buy{background:var(--green-soft);color:var(--green)}
+.b-hold{background:var(--grey-soft);color:#4b524f}
+.b-over{background:var(--amber-soft);color:var(--amber)}
+.b-sell{background:var(--red-soft);color:var(--red)}
+.b-avoid{background:#2b2f2e;color:#fff}
+.b-na{background:var(--grey-soft);color:var(--muted)}
+.muted{color:var(--muted)} .small{font-size:13px}
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--line);font-size:14px;vertical-align:middle}
+th{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:600}
+td.r,th.r{text-align:right}
+.zonebar{position:relative;height:12px;border-radius:6px;overflow:hidden;display:flex;margin:22px 0 22px}
+.zonebar div{height:100%}
+.marker{position:absolute;top:-17px;transform:translateX(-50%);font:600 11px "JetBrains Mono";white-space:nowrap}
+.marker::after{content:"";position:absolute;left:50%;top:15px;width:2px;height:20px;background:var(--ink);transform:translateX(-50%)}
+.zlabels{display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);margin-top:-14px}
+.qbar{height:8px;background:var(--grey-soft);border-radius:4px;overflow:hidden}
+.qbar>div{height:100%;background:var(--green)}
+.punch{display:grid;grid-template-columns:repeat(10,1fr);gap:6px;margin-top:8px}
+.punch span{aspect-ratio:1;border-radius:50%;border:2px dashed #c9c2b1;display:block}
+.punch span.used{background:var(--navy);border-color:var(--navy)}
+.xpbar{height:10px;background:var(--grey-soft);border-radius:5px;overflow:hidden;margin:8px 0 4px}
+.xpbar>div{height:100%;background:linear-gradient(90deg,var(--gold),#d9b25a)}
+.mood{font-size:44px;line-height:1}
+.ach{display:flex;gap:12px;align-items:center;padding:10px;border-radius:10px;border:1px solid var(--line);background:#fff}
+.ach.locked{opacity:.45;filter:grayscale(1)}
+.ach .ic{font-size:26px}
+.alert{padding:12px 14px;border-radius:10px;font-size:14px;margin-bottom:10px}
+.alert.info{background:#e7eef4;color:var(--navy)}
+.alert.warn{background:var(--amber-soft);color:#6b4507}
+.alert.bad{background:var(--red-soft);color:#6e231a}
+.alert.good{background:var(--green-soft);color:#14482f}
+.co-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.co-code{font:700 20px Fraunces,serif}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:6px}
+.stats div{background:#faf8f2;border-radius:9px;padding:8px}
+.stats b{display:block;font:600 15px "JetBrains Mono",monospace}
+.stats span{font-size:11.5px;color:var(--muted);font-weight:600;text-transform:uppercase}
+.modal-bg{position:fixed;inset:0;background:rgba(20,26,30,.45);display:flex;align-items:center;justify-content:center;padding:16px;z-index:50}
+.modal{background:var(--panel);border-radius:16px;max-width:640px;width:100%;max-height:92vh;overflow:auto;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.form-grid .full{grid-column:1/-1}
+.check{display:flex;gap:10px;align-items:flex-start;font-size:14px;color:var(--ink);font-weight:500;margin:8px 0}
+.check input{width:auto;margin-top:3px}
+.toast{position:fixed;right:20px;bottom:20px;max-width:380px;background:var(--navy);color:#fff;padding:14px 16px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.25);z-index:60;font-size:14px}
+.toast b{color:#f0c96b}
+.tabs-m{display:none}
+.lesson{border-left:3px solid var(--gold);padding:4px 0 4px 14px;margin:14px 0}
+.lesson h3{margin-bottom:2px}
+.rule{font-size:13px;background:#faf8f2;border-radius:8px;padding:8px 10px;margin-top:6px}
+.empty{padding:26px;text-align:center;color:var(--muted)}
+.chartbox svg{width:100%;height:auto;display:block}
+.opts{margin-top:10px;background:#faf8f2;border-radius:10px;padding:10px 12px;font-size:13.5px;display:grid;gap:6px}
+.opts::before{content:"Your options";font-size:11.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.sumrow{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+.boards{grid-template-columns:repeat(auto-fit,minmax(420px,1fr))}
+@media (max-width:900px){.boards{grid-template-columns:1fr}}
+.pill{font-size:12px;background:var(--grey-soft);border-radius:999px;padding:2px 9px;color:#4b524f;font-weight:600}
+@media (max-width:900px){
+  .app{grid-template-columns:1fr}
+  nav.side{display:none}
+  main{padding:16px 14px 96px}
+  .g4{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .g3,.g2{grid-template-columns:1fr}
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .form-grid{grid-template-columns:1fr}
+  .tabs-m{display:flex;position:fixed;bottom:0;left:0;right:0;background:var(--navy);z-index:40;justify-content:space-around;padding:6px 4px calc(6px + env(safe-area-inset-bottom))}
+  .tabs-m a{color:#c9d4dc;text-decoration:none;font-size:11px;display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 6px;border-radius:8px}
+  .tabs-m a.on{color:#fff;background:rgba(255,255,255,.12)}
+  .tabs-m .ico{font-size:18px}
+  .hide-m{display:none}
+  th,td{padding:8px 5px;font-size:13px}
+  h1{font-size:22px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <nav class="side" id="side"></nav>
+  <main id="main"></main>
+</div>
+<div class="tabs-m" id="tabsm"></div>
+<div id="modal-root"></div>
+<div id="toast-root"></div>
+
+<script>
+/* ============================================================
+   OMAHA ASX — a Buffett-style value investing game
+   Engine: quality score + 2-stage DCF intrinsic value + margin of safety
+   ============================================================ */
+
+const VERSION = 1;
+const LS_KEY = "omaha-asx-v1";
+const today = () => { const d = new Date(); return new Date(d.getTime() - d.getTimezoneOffset()*60000).toISOString().slice(0,10); };
+const daysBetween = (a,b) => Math.floor((new Date(b) - new Date(a)) / 86400000);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const $ = n => (isFinite(n) ? n : 0).toLocaleString("en-AU",{style:"currency",currency:"AUD",maximumFractionDigits:2});
+const $0 = n => (isFinite(n) ? n : 0).toLocaleString("en-AU",{style:"currency",currency:"AUD",maximumFractionDigits:0});
+const pct = (n,d=1) => (isFinite(n) ? (n*100).toFixed(d) : "—") + "%";
+const sgn = n => (n>=0?"+":"") ;
+
+/* ---------- Seed data: FY26 reported figures, prices approx. mid-Nov 2026 ---------- */
+function seedCompanies(){
+  const asAt = "2026-11-17";
+  const mk = (o) => Object.assign({ownerEps:0,custom:false,priceHist:[{d:o.priceDate,p:o.price}]}, o);
+  return {
+    CBA: mk({code:"CBA",name:"Commonwealth Bank",sector:"Banks",financial:true,price:167.51,priceDate:"2026-11-06",
+      eps:6.57,dps:5.05,roe:14.0,de:0,margin:36,growth:4,lossYears:0,moat:3,competence:true,mgmt:2,
+      notes:"FY26 (12 Aug 2026): cash EPS $6.57, DPS $5.05 ff, ROE 14.0%. Margin = cash NPAT / operating income. Bank: leverage judged by capital (CET1 12.0%), not D/E."}),
+    WES: mk({code:"WES",name:"Wesfarmers",sector:"Retail conglomerate",financial:false,price:80.16,priceDate:"2026-11-16",
+      eps:2.534,dps:2.22,roe:35.5,de:0.65,margin:6.2,growth:7,lossYears:0,moat:2,competence:true,mgmt:2,
+      notes:"FY26 (27 Aug 2026): EPS 253.4c, DPS 222c ff, ROE (R12) 35.5%, net financial debt $5.3b (D/E is an estimate, excl. leases). Bunnings ROC 69%."}),
+    REA: mk({code:"REA",name:"REA Group",sector:"Online classifieds",financial:false,price:166.00,priceDate:"2026-11-15",
+      eps:4.93,dps:2.97,roe:30,de:0.05,margin:36,growth:9,lossYears:0,moat:3,competence:true,mgmt:2,
+      notes:"FY26 (6 Aug 2026): core EPS $4.93, DPS $2.97 ff, no external debt, 61% EBITDA margin. ROE is an estimate — check the annual report. Price approximate."}),
+    CSL: mk({code:"CSL",name:"CSL Limited",sector:"Biotech / plasma",financial:false,price:199.55,priceDate:"2026-11-17",
+      eps:9.90,dps:4.49,roe:15,de:0.5,margin:18,growth:5,lossYears:1,moat:2,competence:false,mgmt:1,
+      notes:"FY26 (18 Aug 2026): underlying NPATA EPS US$6.43 (≈A$9.90 at 0.65), statutory loss after US$7.1b impairments (counted as 1 loss year). DPS US$2.92, unfranked. FY27 guide ≈5% NPAT growth. ROE and D/E are estimates."}),
+    ...seedCompaniesV2()
+  };
+}
+const SEED_VERSION = 3;
+function seedCompaniesV2(){
+  const mk = (o) => Object.assign({ownerEps:0,custom:false,priceHist:[{d:o.priceDate,p:o.price}]}, o);
+  return {
+    JBH: mk({code:"JBH",name:"JB Hi-Fi",sector:"Electronics retail",financial:false,price:75.77,priceDate:"2026-11-17",
+      eps:4.481,dps:3.37,roe:28,de:0,margin:4.4,growth:5,lossYears:0,moat:2,competence:true,mgmt:2,
+      notes:"FY26 (17 Aug 2026): EPS 448.1c, DPS 337c ff (75% payout), net cash. Low-cost operator. Soft start to FY27 hit the shares. ROE is an estimate."}),
+    COH: mk({code:"COH",name:"Cochlear",sector:"Medical devices",financial:false,price:152.00,priceDate:"2026-11-09",
+      eps:4.93,dps:3.45,roe:18.5,de:0,margin:14,growth:6,lossYears:0,moat:3,competence:true,mgmt:1,
+      notes:"FY26 (18 Aug 2026): underlying EPS $4.93 (−22%), DPS $3.45 (−20%), net cash $188m. ~60% global implant share. FY27 guide: underlying NPAT $330–350m. Management rated 'OK' after the April guidance cut."}),
+    COL: mk({code:"COL",name:"Coles Group",sector:"Supermarkets",financial:false,price:22.42,priceDate:"2026-11-11",
+      eps:0.93,dps:0.78,roe:30,de:0.6,margin:2.7,growth:4,lossYears:0,moat:2,competence:true,mgmt:1,
+      notes:"FY26 (25 Aug 2026): underlying NPAT $1.25b (≈93c/share), DPS 78c ff. Shares fell ~13% after the Oct 30 Q1 update flagged flat 1H27 supermarket EBIT. ROE and D/E are estimates (excl. leases)."}),
+    WOW: mk({code:"WOW",name:"Woolworths Group",sector:"Supermarkets",financial:false,price:42.04,priceDate:"2026-11-17",
+      eps:1.31,dps:0.97,roe:32,de:0.8,margin:2.2,growth:6,lossYears:0,moat:2,competence:true,mgmt:1,
+      notes:"F26 (26 Aug 2026): NPAT before significant items $1.60b (≈131c/share), DPS 97c ff, net assets $4.9b. Turnaround under way; shares up ~40% in 2026. D/E is an estimate (excl. leases)."}),
+    TLS: mk({code:"TLS",name:"Telstra",sector:"Telecoms",financial:false,price:5.07,priceDate:"2026-11-11",
+      eps:0.199,dps:0.21,roe:13,de:0.9,margin:9.8,growth:4,lossYears:0,moat:2,competence:true,mgmt:1,
+      notes:"FY26 (13 Aug 2026): reported EPS 19.9c, cash EPS 25.5c, DPS 21c (90.5% franked), $1b buyback, net debt 1.9x EBITDA. Paying out more than reported EPS. ROE and D/E are estimates."}),
+    BHP: mk({code:"BHP",name:"BHP Group",sector:"Mining (copper, iron ore)",financial:false,price:54.38,priceDate:"2026-11-17",
+      eps:4.00,dps:2.65,roe:27,de:0.2,margin:22,growth:2,lossYears:1,moat:2,competence:true,mgmt:2,
+      notes:"FY26 (18 Aug 2026): underlying EPS US$2.60 (≈A$4.00 at 0.65), DPS US$1.72 ff, ROCE 26%, net debt <US$9b. Cyclical: today's earnings ride strong copper prices, so growth is set low (2%) as a mid-cycle haircut. One loss year (FY16)."}),
+    PME: mk({code:"PME",name:"Pro Medicus",sector:"Health imaging software",financial:false,price:202.79,priceDate:"2026-11-12",
+      eps:1.385,dps:0.69,roe:37,de:0,margin:55,growth:15,lossYears:0,moat:3,competence:false,mgmt:2,
+      notes:"FY26 (18 Aug 2026): underlying NPAT $144.7m (≈$1.39/share), revenue $261.7m, DPS 69c ff, no debt. Reported EPS ~$2.54 includes fair-value gains. A wonderful business at a very high price; growth is capped at 15% in the model."}),
+    ARB: mk({code:"ARB",name:"ARB Corporation",sector:"4x4 accessories",financial:false,price:16.67,priceDate:"2026-10-30",
+      eps:1.11,dps:0.69,roe:12.5,de:0,margin:13,growth:6,lossYears:0,moat:2,competence:true,mgmt:2,
+      notes:"FY26 (25 Aug 2026): EPS $1.11 (−5.9%), DPS 69c ff, net cash $48m, no debt. Founder-led with a strong brand. Shares down ~50% from 2025 highs. 10-year sales CAGR 7%."})
+  };
+}
+/* ---------- ASX 200 universe (constituents as listed by FNArena, ~19 Nov 2026) ---------- */
+const ASX200_RAW = `360|Life360 Inc|Software & Services
+4DX|4DMedical|Medical Equipment & Devices
+A2M|A2 Milk Company|Dairy
+AAI|Alcoa Corporation|Aluminium, Bauxite & Alumina
+ABB|Aussie Broadband|Telecommunication
+AGL|AGL Energy|Infrastructure & Utilities
+AIA|Auckland International Airport|Infrastructure & Utilities
+ALD|Ampol|Crude Oil, Consumer Products
+ALK|Alkane Resources|Gold & Silver
+ALL|Aristocrat Leisure|Gaming
+ALQ|ALS Limited|Mining Contracting & Engineering
+ALX|Atlas Arteria|Infrastructure & Utilities
+AMC|Amcor PLC|Paper & Packaging
+AMP|AMP Limited|Wealth Management & Investments
+ANN|Ansell|Commercial Services & Supplies
+ANZ|ANZ Group Holdings|Banks
+APA|APA Group|Infrastructure & Utilities
+APE|Eagers Automotive|Automobiles & Components
+ARB|ARB Corporation|Automobiles & Components
+ARF|Arena REIT|REITs
+ASB|Austal|Commercial Services & Supplies
+ASX|ASX Limited|Wealth Management & Investments
+AUB|AUB Group|Insurance
+AZJ|Aurizon Holdings|Transportation & Logistics
+BEN|Bendigo & Adelaide Bank|Banks
+BGA|Bega Cheese|Dairy
+BGL|Bellevue Gold|Gold & Silver
+BHP|BHP Group|Bulks, Crude Oil
+BJY|Barrenjoey Group|Wealth Management & Investments
+BOQ|Bank of Queensland|Banks
+BPT|Beach Energy|Crude Oil
+BRG|Breville Group|Household & Personal Products
+BSL|BlueScope Steel|Steel & Scrap
+BWP|BWP Group|REITs
+BXB|Brambles|Transportation & Logistics
+CAR|CAR Group|Online media & mobile platforms
+CBA|Commonwealth Bank of Australia|Banks
+CDA|Codan|Hardware & Equipment
+CGF|Challenger|Wealth Management & Investments
+CHC|Charter Hall Group|REITs
+CIA|Champion Iron|Iron Ore
+CIP|Centuria Industrial REIT|REITs
+CLW|Charter Hall Long WALE REIT|REITs
+CMM|Capricorn Metals|Gold & Silver
+CNI|Centuria Capital Group|Diversified Financials
+CNU|Chorus|Telecommunication
+COH|Cochlear|Medical Equipment & Devices
+COL|Coles Group|Food, Beverages & Tobacco
+CPU|Computershare|Diversified Financials
+CQR|Charter Hall Retail REIT|REITs
+CSC|Capstone Copper|Copper
+CSL|CSL Limited|Pharmaceuticals & Biotech
+CWY|Cleanaway Waste Management|Industrial Contractors & Engineers
+CYL|Catalyst Metals|Gold & Silver
+DBI|Dalrymple Bay Infrastructure|Infrastructure & Utilities
+DMP|Domino's Pizza Enterprises|Food, Beverages & Tobacco
+DNL|Dyno Nobel|Mining Sector Contracting
+DOW|Downer EDI|Industrial Contractors & Engineers
+DRO|DroneShield|Aerospace & Defence
+DRR|Deterra Royalties|Iron Ore
+DTL|Data#3|IT & Support
+DVP|Develop Global|Industrial Metals
+DXS|Dexus|REITs
+DYL|Deep Yellow|Uranium
+EDV|Endeavour Group|Food, Beverages & Tobacco
+ELD|Elders|Agriculture
+ELS|Elsight|Aerospace & Defence
+ELV|Elevra Lithium|New Battery Elements
+EMR|Emerald Resources|Gold & Silver
+EOS|Electro Optic Systems|Aerospace & Defence
+EVN|Evolution Mining|Gold & Silver
+FBU|Fletcher Building|Building Products & Services
+FFM|Firefly Metals|Copper, Gold & Silver
+FLT|Flight Centre Travel Group|Travel, Leisure & Tourism
+FMG|Fortescue|Iron Ore
+FPH|Fisher & Paykel Healthcare|Medical Equipment & Devices
+GDG|Generation Development Group|Wealth Management & Investments
+GGP|Greatland Resources|Gold & Silver
+GMD|Genesis Minerals|Gold & Silver
+GMG|Goodman Group|Infra & Property Developers
+GPT|GPT Group|Infra & Property Developers
+HDN|HomeCo Daily Needs REIT|REITs
+HLI|Helia Group|Insurance
+HUB|HUB24|Wealth Management & Investments
+HVN|Harvey Norman Holdings|Consumer Electronics
+IAG|Insurance Australia Group|Insurance
+IFT|Infratil|Wealth Management & Investments
+IGO|IGO Limited|Nickel, Gold & Silver
+ILU|Iluka Resources|Mineral Sands
+IMD|Imdex|Mining Sector Contracting
+INA|Ingenia Communities Group|Aged Care & Seniors
+IPX|IperionX|Industrial Metals
+IRE|Iress|Wealth Management & Investments
+JBH|JB Hi-Fi|Consumer Electronics
+JDO|Judo Capital Holdings|Banks
+JHX|James Hardie Industries|Building Products & Services
+KAR|Karoon Energy|Crude Oil, NatGas
+KCN|Kingsgate Consolidated|Gold & Silver
+LLC|Lendlease Group|Infra & Property Developers
+LNW|Light & Wonder|Gaming
+LOV|Lovisa Holdings|Retailing
+LTR|Liontown|New Battery Elements
+LYC|Lynas Rare Earths|Rare Earth Minerals
+MGR|Mirvac Group|Infra & Property Developers
+MI6|Minerals 260|Mining
+MIN|Mineral Resources|Iron Ore, Mining Contracting
+MND|Monadelphous Group|Energy & Mining Contracting
+MP1|Megaport|Cloud services
+MPL|Medibank Private|Insurance
+MQG|Macquarie Group|Diversified Financials
+MSB|Mesoblast|Pharmaceuticals & Biotech
+MTS|Metcash|Food, Beverages & Tobacco
+NAB|National Australia Bank|Banks
+NCK|Nick Scali|Furniture & Renovation
+NEC|Nine Entertainment|Print, Radio & TV
+NEM|Newmont Corporation|Copper, Gold & Silver
+NEU|Neuren Pharmaceuticals|Pharmaceuticals & Biotech
+NHC|New Hope Corporation|Coal
+NHF|nib Holdings|Insurance
+NIC|Nickel Industries|Nickel
+NST|Northern Star Resources|Gold & Silver
+NWH|NRW Holdings|Mining Sector Contracting
+NWL|Netwealth Group|Wealth Management & Investments
+NWS|News Corporation|Print, Radio & TV
+NXG|NexGen Energy|Uranium
+NXT|NextDC|Cloud services
+OBM|Ora Banda Mining|Gold & Silver
+ORA|Orora|Paper & Packaging
+ORG|Origin Energy|Infrastructure & Utilities
+ORI|Orica|Mining Sector Contracting
+PDI|PDI Gold|Gold & Silver
+PDN|Paladin Energy|Uranium
+PLS|PLS Group|New Battery Elements
+PME|Pro Medicus|Medical Equipment & Devices
+PMV|Premier Investments|Apparel & Footwear
+PNI|Pinnacle Investment Management|Wealth Management & Investments
+PPT|Perpetual|Wealth Management & Investments
+PRN|Perenti|Energy & Mining Contracting
+PRU|Perseus Mining|Gold & Silver
+PXA|PEXA Group|Real Estate
+QAN|Qantas Airways|Travel, Leisure & Tourism
+QBE|QBE Insurance Group|Insurance
+REA|REA Group|Online media & mobile platforms
+REH|Reece|Furniture & Renovation
+RGN|Region Group|REITs
+RHC|Ramsay Health Care|Healthcare services
+RIO|Rio Tinto|Bulks, Aluminium
+RMD|ResMed Inc|Medical Equipment & Devices
+RMS|Ramelius Resources|Gold & Silver
+RRL|Regis Resources|Gold & Silver
+RSG|Resolute Mining|Gold & Silver
+RWC|Reliance Worldwide|Building Products & Services
+S32|South32|Mining
+SCG|Scentre Group|REITs
+SDF|Steadfast Group|Insurance
+SEK|SEEK|Online media & mobile platforms
+SFR|Sandfire Resources|Copper
+SGH|SGH Limited|Diversified Financials
+SGM|Sims|Steel & Scrap
+SGP|Stockland|Infra & Property Developers
+SHL|Sonic Healthcare|Healthcare services
+SIG|Sigma Healthcare|Health & Nutrition
+SIQ|Smartgroup Corporation|Vehicle Leasing & Salary Packaging
+SLC|Superloop|Telecommunication
+SLX|Silex Systems|Uranium
+SOL|Washington H. Soul Pattinson|Diversified Financials
+SRG|SRG Global|Building Products & Services
+SRL|Sunrise Energy Metals|Nickel
+SSM|Service Stream|Industrial Contractors & Engineers
+STO|Santos|NatGas
+SUL|Super Retail Group|Sports & Recreation
+SUN|Suncorp Group|Insurance
+TAH|Tabcorp Holdings|Gaming
+TCL|Transurban Group|Infrastructure & Utilities
+TLC|The Lottery Corporation|Gaming
+TLS|Telstra Group|Telecommunication
+TLX|Telix Pharmaceuticals|Pharmaceuticals & Biotech
+TNE|Technology One|IT & Cloud services
+TPG|TPG Telecom|Telecommunication
+TWE|Treasury Wine Estates|Food, Beverages & Tobacco
+VAU|Vault Minerals|Gold & Silver
+VCX|Vicinity Centres|REITs
+VEA|Viva Energy Group|Crude Oil
+VNT|Ventia Services Group|Industrial Contractors & Engineers
+VUL|Vulcan Energy Resources|New Battery Elements
+WAF|West African Resources|Gold & Silver
+WBC|Westpac Banking Corporation|Banks
+WBT|Weebit Nano|Hardware & Equipment
+WDS|Woodside Energy Group|NatGas
+WES|Wesfarmers|Consumer Products & Services
+WGX|Westgold Resources|Gold & Silver
+WHC|Whitehaven Coal|Coal
+WOR|Worley|Energy Sector Contracting
+WOW|Woolworths Group|Food, Beverages & Tobacco
+WPR|Waypoint REIT|REITs
+WTC|WiseTech Global|Cloud services
+XRO|Xero|Accountancy software
+XYZ|Block Inc|Business & Consumer Credit
+YAL|Yancoal Australia|Coal
+ZIP|Zip Co|Business & Consumer Credit`;
+const ASX200 = ASX200_RAW.trim().split("\n").map(l=>{ const [code,name,sector]=l.split("|"); return {code,name,sector}; });
+const ASX200_MAP = Object.fromEntries(ASX200.map(x=>[x.code,x]));
+const isFinSector = s => /Bank|Insurance/i.test(s||"");
+
+/* Screener seeds: price, P/E-derived EPS and dividend yield from TradingView (~19 Nov 2026);
+   ROE, debt, margin, growth, moat and management are Claude's rough estimates (flagged "auto"). */
+function seedScreenV3(){
+  const d = "2026-11-19";
+  const mk = (code, price, pe, yld, o) => {
+    const meta = ASX200_MAP[code] || {name:code, sector:"—"};
+    const eps = +(price/pe).toFixed(3), dps = +(price*yld/100).toFixed(3);
+    return Object.assign({code, name:meta.name, sector:meta.sector, financial:isFinSector(meta.sector), price, priceDate:d,
+      priceHist:[{d,p:price}], eps, ownerEps:0, dps, lossYears:0, competence:true, custom:false, auto:true}, o);
+  };
+  return {
+    RIO: mk("RIO",135.00,12.44,4.71,{roe:15,de:0.2,margin:18,growth:2,moat:2,mgmt:1,notes:"Price, P/E (12.4) and yield from TradingView. Diversified miner (iron ore, copper, aluminium) — earnings are cyclical, so growth is set low. ROE/debt/margin are estimates."}),
+    WBC: mk("WBC",36.76,18.48,4.18,{roe:10,de:0,margin:30,growth:3,moat:2,mgmt:1,notes:"Price, P/E (18.5) and yield from TradingView. ROE ~10% is an estimate. Bank: leverage judged on capital."}),
+    ANZ: mk("ANZ",39.00,16.30,4.25,{roe:10,de:0,margin:28,growth:3,moat:1,mgmt:1,notes:"Price, P/E (16.3) and yield from TradingView. ROE is an estimate."}),
+    NAB: mk("NAB",36.72,18.45,4.59,{roe:11.5,de:0,margin:30,growth:3,moat:2,mgmt:1,notes:"Price, P/E (18.5) and yield from TradingView. ROE is an estimate."}),
+    MQG: mk("MQG",224.92,15.28,3.04,{roe:12,de:0,margin:20,growth:6,moat:2,mgmt:2,notes:"Price, P/E (15.3) and yield from TradingView. Global asset manager/investment bank; earnings can swing. ROE is an estimate."}),
+    FMG: mk("FMG",13.16,9.47,8.01,{roe:18,de:0.3,margin:25,growth:0,moat:1,mgmt:1,notes:"Price, P/E (9.5) and yield from TradingView. Pure iron-ore exposure: today's earnings depend on the iron-ore price, so growth is set to 0%. Estimates for ROE/debt."}),
+    NST: mk("NST",22.80,19.71,2.27,{roe:10,de:0.1,margin:20,growth:5,moat:1,mgmt:1,notes:"Price, P/E (19.7) and yield from TradingView. Gold miner — earnings track the gold price. Estimates for ROE/debt/margin."}),
+    AMC: mk("AMC",65.31,19.43,5.79,{roe:9,de:1.3,margin:5,growth:5,moat:1,mgmt:1,notes:"Price, P/E (19.4) and yield from TradingView. Packaging; debt rose after the Berry merger. Estimates for ROE/debt/margin."}),
+    EVN: mk("EVN",10.88,14.95,3.49,{roe:15,de:0.4,margin:20,growth:5,moat:1,mgmt:1,notes:"Price, P/E (15.0) and yield from TradingView. Gold & copper miner; record gold prices flatter current earnings. Estimates for ROE/debt."}),
+    JHX: mk("JHX",40.80,47.09,0,{roe:10,de:1.0,margin:10,growth:8,moat:2,mgmt:0,notes:"Price and P/E (47.1) from TradingView. Fibre-cement leader; leverage up after the AZEK deal and governance controversy (management rated 'Poor'). Estimates for ROE/debt."}),
+    S32: mk("S32",4.01,11.50,3.07,{roe:6,de:0.1,margin:8,growth:2,moat:0,mgmt:1,lossYears:1,notes:"Price, P/E (11.5) and yield from TradingView. Commodity producer with a recent impairment-driven loss year. Estimates for ROE/debt."}),
+    BSL: mk("BSL",31.20,17.17,4.09,{roe:6,de:0.1,margin:4,growth:3,moat:1,mgmt:1,notes:"Price, P/E (17.2) and yield from TradingView. Steel is cyclical; ROE/margin are estimates."}),
+    LYC: mk("LYC",12.79,57.98,0,{roe:4,de:0,margin:10,growth:15,moat:1,mgmt:1,notes:"Price and P/E (58.0) from TradingView. Rare-earths producer with strategic value but thin current earnings. Estimates for ROE/margin."})
+  };
+}
+const PRICE_UPDATES_V3 = {CBA:171.63, BHP:52.34, CSL:199.85, WES:77.51};
+
+function mergeSeeds(st){
+  const v = st.seedVersion||1;
+  if (v < 2){ const add = seedCompaniesV2(); for (const k in add) if (!st.companies[k]) st.companies[k] = add[k]; }
+  if (v < 3){
+    st.screen = st.screen || {};
+    const add = seedScreenV3();
+    for (const k in add) if (!st.companies[k] && !st.screen[k]) st.screen[k] = add[k];
+    const d = "2026-11-19";
+    for (const [k,p] of Object.entries(PRICE_UPDATES_V3)){
+      const c = st.companies[k];
+      if (c && (c.priceDate||"") < d){ c.price = p; c.priceDate = d; c.priceHist = (c.priceHist||[]).concat([{d,p}]); }
+    }
+  }
+  st.screen = st.screen || {};
+  st.seedVersion = SEED_VERSION;
+  return st;
+}
+function freshState(){
+  return mergeSeeds({
+    v:VERSION, createdAt: today(), updatedAt: Date.now(),
+    startCash:100000, cash:100000, startDate: today(),
+    index:{level:8883, date:"2026-11-17", start:8883, hist:[{d:"2026-11-17",v:8883}]},
+    settings:{r:0.09, tg:0.03, mosBuy:0.25, sellPremium:0.30, brokerage:10, punches:20},
+    companies: seedCompanies(),
+    holdings:{}, trades:[], xp:0, xpLog:[], ach:{}, milestones:{}, snapshots:[],
+    seenIntro:false, seedVersion: 2, screen:{}
+  });
+}
+
+/* ---------- Buffett engine ---------- */
+function intrinsicValue(c, s){
+  const base = c.ownerEps > 0 ? c.ownerEps : c.eps;
+  if (!(base > 0) || s.r <= s.tg) return 0;
+  const g = Math.min(Math.max((c.growth||0)/100, -0.05), 0.15);   // growth capped at 15% — Buffett distrusts rosy forecasts
+  let e = base, sum = 0;
+  for (let t=1; t<=10; t++){ e *= (1+g); sum += e / Math.pow(1+s.r, t); }
+  const terminal = e * (1+s.tg) / (s.r - s.tg) / Math.pow(1+s.r, 10);
+  return sum + terminal;
+}
+function quality(c){
+  const parts = [];
+  // 1. Return on equity — the single best sign of a durable advantage
+  let roePts;
+  if (c.financial) roePts = c.roe>=14?25 : c.roe>=11?16 : c.roe>=8?6 : 0;
+  else roePts = c.roe>=20?25 : c.roe>=15?20 : c.roe>=10?10 : 0;
+  parts.push(["Return on equity", roePts, 25, `${c.roe}%${c.financial?" (bank scale)":""}`]);
+  // 2. Conservative balance sheet
+  let dPts;
+  if (c.financial) dPts = 10;
+  else dPts = c.de<=0.3?15 : c.de<=0.6?11 : c.de<=1.0?6 : 0;
+  parts.push(["Low debt", dPts, 15, c.financial ? "bank — judged on capital ratio" : `D/E ${c.de}`]);
+  // 3. Consistent earnings
+  const lPts = c.lossYears==0?15 : c.lossYears==1?8 : 0;
+  parts.push(["Consistent earnings", lPts, 15, `${c.lossYears} loss yr(s) in 10`]);
+  // 4. Earnings growth
+  const gPts = c.growth>=10?10 : c.growth>=6?7 : c.growth>=3?4 : 0;
+  parts.push(["Earnings growth", gPts, 10, `${c.growth}% p.a. assumed`]);
+  // 5. Margins (pricing power)
+  const mPts = c.margin>=20?10 : c.margin>=10?7 : c.margin>=5?4 : 0;
+  parts.push(["Profit margin", mPts, 10, `${c.margin}% net`]);
+  // 6. Moat
+  const moatPts = [0,6,11,15][c.moat|0] ?? 0;
+  parts.push(["Economic moat", moatPts, 15, ["None","Narrow","Solid","Wide"][c.moat|0]]);
+  // 7. Circle of competence
+  parts.push(["Circle of competence", c.competence?5:0, 5, c.competence?"I understand it":"Outside my circle"]);
+  // 8. Management
+  const mgPts = [0,3,5][c.mgmt|0] ?? 0;
+  parts.push(["Honest, able management", mgPts, 5, ["Poor","OK","Excellent"][c.mgmt|0]]);
+  const score = parts.reduce((a,p)=>a+p[1],0);
+  const grade = score>=80?"Wonderful business" : score>=65?"Good business" : score>=50?"Fair business" : "Not Buffett-grade";
+  return {score, grade, parts};
+}
+function requiredMos(q, s){
+  if (q>=80) return 0.10;           // wonderful company at a fair price
+  if (q>=65) return s.mosBuy;       // good company needs a real discount
+  if (q>=50) return 0.40;           // fair company only at a "cigar-butt" price
+  return Infinity;
+}
+function analyse(c, s){
+  const q = quality(c);
+  const iv = intrinsicValue(c, s);
+  const price = c.price;
+  const mos = iv>0 ? (iv - price)/iv : -Infinity;
+  const req = requiredMos(q.score, s);
+  const buyAt = isFinite(req) ? iv*(1-req) : 0;
+  const strongAt = isFinite(req) ? iv*(1-Math.min(req+0.15,0.6)) : 0;
+  const sellAt = iv*(1+s.sellPremium);
+  let sig;
+  if (q.score < 50) sig = {k:"avoid", label:"Avoid", why:"Fails the quality test — Buffett would pass at any price."};
+  else if (!(iv>0)) sig = {k:"na", label:"No value", why:"Needs positive earnings to value."};
+  else if (price <= strongAt) sig = {k:"strong", label:"Strong buy", why:"Deep margin of safety on a quality business."};
+  else if (price <= buyAt) sig = {k:"buy", label:"Buy zone", why:"Price is below the required margin of safety."};
+  else if (price >= sellAt) sig = {k:"sell", label:"Sell / trim zone", why:`Price is ${pct(price/iv-1,0)} above intrinsic value.`};
+  else if (price > iv) sig = {k:"over", label:"Hold · overvalued", why:"Above value — hold if owned, don't add."};
+  else sig = {k:"hold", label:"Hold · fair", why:"Near fair value — wait for a better price."};
+  return {q, iv, mos, req, buyAt, strongAt, sellAt, sig, price};
+}
+const badge = sig => `<span class="badge b-${sig.k}">${esc(sig.label)}</span>`;
+
+/* ---------- State & persistence ---------- */
+let S;
+try { S = JSON.parse(localStorage.getItem(LS_KEY)) || freshState(); } catch(e){ S = freshState(); }
+S = mergeSeeds(S);
+let cloud = {ref:null, status:"local"};
+let saveTimer = null;
+function save(){
+  S.updatedAt = Date.now();
+  try { localStorage.setItem(LS_KEY, JSON.stringify(S)); } catch(e){}
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(async ()=>{
+    if (!cloud.ref) return;
+    if (cloud.ref.hosted){
+      try { await api("/api/state", {method:"PUT", body: JSON.stringify({state: JSON.stringify(S), updatedAt: S.updatedAt})}); cloud.status="synced"; }
+      catch(e){ cloud.status="error"; }
+      renderSideFoot(); return;
+    }
+    try { await cloud.ref.set({state: JSON.stringify(S), updatedAt: S.updatedAt}); cloud.status="synced"; renderSideFoot(); }
+    catch(e){ cloud.status="error"; renderSideFoot(); }
+  }, 1200);
+}
+/* ---------- Hosted mode (Cloudflare Worker serves /api/*) ---------- */
+const HOSTED = !!document.querySelector('meta[name="omaha-host"]');
+const host = {pin: (()=>{ try{ return localStorage.getItem("omaha-pin")||""; }catch(e){ return ""; } })(), meta:null, busy:false, msg:""};
+async function api(path, opts={}){
+  const r = await fetch(path, Object.assign({}, opts, {headers:Object.assign({"Content-Type":"application/json","X-Omaha-Pin":host.pin||""}, opts.headers||{})}));
+  if (r.status === 401){ askPin(); throw {code:"auth"}; }
+  if (!r.ok){ let t=""; try{ t = (await r.json()).error||""; }catch(e){} throw {code:"http", status:r.status, message:t}; }
+  return r.json();
+}
+function askPin(wrong){
+  if (document.getElementById("pinbox")) return;
+  modal(`<h2>Unlock your game</h2><p class="small">Enter the PIN you set as <span class="mono">APP_PIN</span> in Cloudflare. It's stored on this device so you only enter it once.</p>
+  ${wrong?`<div class="alert bad">That PIN didn't work.</div>`:""}
+  <input id="pinbox" type="password" autocomplete="current-password" placeholder="PIN">
+  <div class="row" style="margin-top:10px"><button class="primary" onclick="savePin()">Unlock</button><button onclick="closeModal()">Play offline on this device</button></div>`);
+}
+function savePin(){ host.pin = document.getElementById("pinbox").value.trim(); try{ localStorage.setItem("omaha-pin", host.pin); }catch(e){} closeModal(); hostedInit(); }
+async function hostedInit(){
+  cloud.status = "connecting"; renderSideFoot();
+  try{
+    const s = await api("/api/state");
+    if (s && s.state && (s.updatedAt||0) > (S.updatedAt||0)){ S = mergeSeeds(JSON.parse(s.state)); try{ localStorage.setItem(LS_KEY, JSON.stringify(S)); }catch(e){} }
+    cloud.ref = {hosted:true}; cloud.status = "synced";
+    if (!s || !s.state || (s.updatedAt||0) < (S.updatedAt||0)) save();
+    await pullPrices(true);
+    render();
+  }catch(e){ cloud.status = e && e.code==="auth" ? "local" : "error"; renderSideFoot(); }
+}
+async function pullPrices(quiet){
+  let p; try{ p = await (await fetch("/api/prices", {cache:"no-store"})).json(); }catch(e){ return; }
+  host.meta = p; let n = 0;
+  for (const [code, q] of Object.entries(p.prices||{})){
+    const c = S.companies[code] || S.screen[code]; if (!c || !(q.p>0)) continue;
+    if (!c.priceDate || q.d > c.priceDate || (q.d === c.priceDate && c.price !== q.p && (q.t||"") > (c.liveAt||""))){
+      c.price = q.p; c.priceDate = q.d; c.liveAt = q.t;
+      const h = c.priceHist = c.priceHist||[]; if (h.length && h[h.length-1].d === q.d) h[h.length-1].p = q.p; else h.push({d:q.d, p:q.p});
+      if (h.length > 500) h.splice(0, h.length-500);
+      n++;
+    }
+  }
+  if (p.index && p.index.v > 0 && (!S.index.date || p.index.d >= S.index.date) && S.index.level !== p.index.v){
+    S.index.level = p.index.v; S.index.date = p.index.d; S.index.hist.push({d:p.index.d, v:p.index.v}); n++;
+  }
+  if (n){ snapshot(); save(); render(); if (!quiet) toast(`🔄 ${n} live price${n===1?"":"s"} applied.`); }
+  else if (view==="prices") render();
+  return n;
+}
+async function hostedSync(){
+  if (host.busy) return; host.busy = true; host.msg = "Asking the server to fetch a batch (this can take ~30 seconds)…"; render();
+  try{ const r = await api("/api/sync", {method:"POST"}); host.msg = r.summary || "Batch finished."; await pullPrices(); }
+  catch(e){ host.msg = e.code==="auth" ? "Enter your PIN first." : `Server error: ${esc(e.message||e.status||"unknown")}`; }
+  host.busy = false; render();
+}
+function hostedPanel(){
+  const m = host.meta, u = m && m.usage || {};
+  const mine = [...new Set([...Object.keys(S.holdings), ...Object.keys(S.companies)])];
+  const freshMine = mine.filter(k=>{ const q = m && m.prices && m.prices[k]; return q && q.f === (m.today||""); }).length;
+  const all = m && m.prices ? Object.keys(m.prices).length : 0;
+  return `<div class="card" style="margin-bottom:16px;border-color:var(--green)"><div class="row between"><h3 style="margin:0">🟢 Live market data · your Cloudflare server</h3>
+    <span class="small muted">${m && m.lastRun ? `Server last fetched ${esc(new Date(m.lastRun).toLocaleString("en-AU"))}` : "No server fetch yet"}</span></div>
+    <p class="small">Your server fetches prices automatically every weekday evening after the ASX closes, using two free data keys. It does your holdings and watchlist first, then works through the rest of the ASX 200. This page picks up new prices whenever it's open.</p>
+    <div class="stats" style="margin-bottom:10px">
+      <div><span>Your companies fresh today</span><b>${freshMine}/${mine.length}</b></div>
+      <div><span>ASX 200 with prices</span><b>${all}/200</b></div>
+      <div><span>Alpha Vantage today</span><b>${u.av||0}/${(m&&m.caps&&m.caps.av)||24}</b></div>
+      <div><span>EODHD today</span><b>${u.eod||0}/${(m&&m.caps&&m.caps.eod)||19}</b></div>
+    </div>
+    <div class="row"><button class="primary" onclick="pullPrices()">⬇️ Pull latest prices</button><button ${host.busy?"disabled":""} onclick="hostedSync()">${host.busy?"Fetching…":"⚡ Fetch a batch now"}</button>
+      <span class="small muted">"Fetch now" uses part of today's free quota.</span></div>
+    ${host.msg?`<div class="alert info" style="margin-top:10px">${esc(host.msg)}</div>`:""}
+    ${m && m.lastErrors && m.lastErrors.length ? `<div class="alert warn" style="margin-top:10px">Last run notes: ${m.lastErrors.map(esc).join(" · ")}</div>`:""}
+  </div>`;
+}
+
+async function initCloud(){
+  if (HOSTED) return hostedInit();
+  try{
+    if (!window.claude || !claude.use) return;
+    const [db, user] = await Promise.all([claude.use("db"), claude.use("user")]);
+    if (!db || !user) return;
+    const id = await user.id();
+    if (!id) return;
+    cloud.ref = db.collection("data/users/"+id).doc("game");
+    cloud.status = "connecting"; renderSideFoot();
+    const timeout = new Promise((_,rej)=>setTimeout(()=>rej(new Error("timeout")),10000));
+    const snap = await Promise.race([cloud.ref.get(), timeout]);
+    const data = snap && (typeof snap.data === "function" ? snap.data() : snap);
+    if (data && data.state && (data.updatedAt||0) > (S.updatedAt||0)){
+      S = mergeSeeds(JSON.parse(data.state)); try{localStorage.setItem(LS_KEY, JSON.stringify(S));}catch(e){}
+      render();
+    } else { save(); }
+    cloud.status = "synced"; renderSideFoot();
+  } catch(e){ cloud.status = cloud.ref ? "error" : "local"; renderSideFoot(); }
+}
+
+/* ---------- Portfolio maths ---------- */
+function holdingsValue(){ return Object.entries(S.holdings).reduce((a,[k,h])=>a + h.shares*(S.companies[k]?.price||0), 0); }
+function totalValue(){ return S.cash + holdingsValue(); }
+function portfolioReturn(){ return totalValue()/S.startCash - 1; }
+function indexReturn(){ return S.index.start ? S.index.level/S.index.start - 1 : 0; }
+function punchesUsed(){ return S.trades.filter(t=>t.side==="buy").length; }
+function snapshot(){
+  const d = today();
+  const snap = {d, v: totalValue(), i: S.index.level};
+  const last = S.snapshots[S.snapshots.length-1];
+  if (last && last.d === d) S.snapshots[S.snapshots.length-1] = snap; else S.snapshots.push(snap);
+}
+
+/* ---------- XP, ranks, achievements ---------- */
+const RANKS = [[0,"Cigar-Butt Collector"],[300,"Graham Apprentice"],[800,"Omaha Analyst"],[1600,"Capital Allocator"],[3000,"Berkshire Partner"],[5000,"Oracle of the ASX"]];
+function rank(){ let r = RANKS[0], next = null; for (let i=0;i<RANKS.length;i++){ if (S.xp>=RANKS[i][0]) { r = RANKS[i]; next = RANKS[i+1]||null; } } return {r, next}; }
+function award(xp, reason){ S.xp += xp; S.xpLog.unshift({d:today(), xp, reason}); S.xpLog = S.xpLog.slice(0,200); }
+const ACH = [
+  ["first_buy","🎯","First Punch","Make your first purchase."],
+  ["mos_buy","🛡️","Margin of Safety","Buy a stock at or below its buy-zone price."],
+  ["wonderful","🏰","Wonderful Business","Own a company scoring 80+ on quality."],
+  ["writer","✍️","Write It Down","Record a 40+ character reason on 5 trades."],
+  ["patient_1y","⏳","Patient Capital","Hold a position for 1 year."],
+  ["forever_3y","♾️","Forever Holder","Hold a position for 3 years."],
+  ["sell_bubble","🎈","Sold to Mr Market","Sell shares while they're in the sell zone."],
+  ["quiet","🪑","Inactivity, Rewarded","Go 90 days without trading while invested."],
+  ["beat_index","📈","Beat the Index","Outperform the ASX 200 after at least 1 year."],
+  ["circle","⭕","Circle of Competence","Add and analyse a company of your own."]
+];
+function unlock(id){
+  if (S.ach[id]) return;
+  S.ach[id] = today();
+  const a = ACH.find(x=>x[0]===id);
+  award(150, "Achievement: "+a[2]);
+  toast(`${a[1]} <b>Achievement unlocked:</b> ${esc(a[2])} (+150 XP)`);
+}
+function checkPassive(){
+  const now = today();
+  for (const [code,h] of Object.entries(S.holdings)){
+    const age = daysBetween(h.firstBuy, now);
+    if (age>=365 && !S.milestones[code+"_1y"]) { S.milestones[code+"_1y"]=now; award(200, `Held ${code} for a year`); unlock("patient_1y"); }
+    if (age>=1095 && !S.milestones[code+"_3y"]) { S.milestones[code+"_3y"]=now; award(500, `Held ${code} for three years`); unlock("forever_3y"); }
+    const c = S.companies[code]; if (c && quality(c).score>=80) unlock("wonderful");
+  }
+  if (Object.keys(S.holdings).length){
+    const lastTrade = S.trades[0]?.date;
+    if (lastTrade && daysBetween(lastTrade, now) >= 90) unlock("quiet");
+  }
+  if (daysBetween(S.startDate, now) >= 365 && portfolioReturn() > indexReturn()) unlock("beat_index");
+}
+
+/* ---------- UI shell ---------- */
+const VIEWS = [
+  ["dashboard","🏠","Dashboard"],["watchlist","🔎","Analyser"],["screener","📊","ASX 200"],["portfolio","💼","Portfolio"],
+  ["prices","🔄","Update prices"],["journal","📓","Journal"],["academy","🎓","Buffett school"],["settings","⚙️","Settings"]
+];
+let view = (location.hash||"").slice(1) || "dashboard";
+if (!VIEWS.find(v=>v[0]===view)) view = "dashboard";
+window.addEventListener("hashchange", ()=>{ const v=(location.hash||"").slice(1); if (VIEWS.find(x=>x[0]===v)) { view=v; render(); }});
+function go(v){ view=v; try{ history.replaceState(null,"","#"+v);}catch(e){ location.hash=v; } render(); window.scrollTo(0,0); }
+
+function renderNav(){
+  const side = document.getElementById("side");
+  side.innerHTML = `<div class="brand">Omaha ASX<small>Buffett value game</small></div>` +
+    VIEWS.map(([k,i,l])=>`<a href="#${k}" class="${view===k?"on":""}" onclick="go('${k}');return false"><span class="ico">${i}</span>${l}</a>`).join("") +
+    `<div class="foot" id="sidefoot"></div>`;
+  document.getElementById("tabsm").innerHTML = VIEWS.filter(v=>v[0]!=="settings" && v[0]!=="journal").map(([k,i,l])=>
+    `<a href="#${k}" class="${view===k?"on":""}" onclick="go('${k}');return false"><span class="ico">${i}</span>${l.split(" ")[0]}</a>`).join("");
+  renderSideFoot();
+}
+function renderSideFoot(){
+  const el = document.getElementById("sidefoot"); if (!el) return;
+  const st = {local: HOSTED?`Saved on this device · <a href="#" style="color:#c9d4dc" onclick="askPin();return false">enter PIN to sync</a>`:"Saved in this browser", connecting:"Connecting cloud save…", synced:"☁️ Cloud save on — syncs PC & mobile", error:"Cloud save failed — saved locally"}[cloud.status];
+  el.innerHTML = `${st}<br>Game started ${esc(S.startDate)}`;
+}
+function render(){
+  checkPassive();
+  renderNav();
+  const m = document.getElementById("main");
+  m.innerHTML = ({dashboard:vDashboard, watchlist:vWatchlist, screener:vScreener, portfolio:vPortfolio, prices:vPrices, journal:vJournal, academy:vAcademy, settings:vSettings})[view]();
+  if (view==="prices") wirePrices();
+}
+
+/* ---------- Views ---------- */
+function stalePriceNote(){
+  const dates = Object.values(S.companies).map(c=>c.priceDate).sort();
+  const oldest = dates[0]; if (!oldest) return "";
+  const age = daysBetween(oldest, today());
+  if (age < 3) return "";
+  return `<div class="alert warn">Some prices are ${age} days old (oldest ${esc(oldest)}). Signals are only as fresh as your prices — <a href="#prices" onclick="go('prices');return false">update prices</a> before trading.</div>`;
+}
+function moodOf(){
+  const list = Object.values(S.companies).map(c=>analyse(c,S.settings)).filter(a=>a.iv>0);
+  if (!list.length) return {e:"😐",t:"Unknown",d:"Add companies to read Mr Market's mood."};
+  const avg = list.reduce((a,x)=>a+x.mos,0)/list.length;
+  if (avg >= 0.25) return {e:"😱",t:"Panicking",d:"Mr Market is begging you to take shares off his hands. This is when fortunes are made — if the businesses are sound.",avg};
+  if (avg >= 0.05) return {e:"😟",t:"Gloomy",d:"Prices sit below value on average. Good hunting ground for patient buyers.",avg};
+  if (avg >= -0.15) return {e:"🙂",t:"Calm",d:"Prices are roughly fair. Nothing urgent — sitting still is a perfectly good move.",avg};
+  if (avg >= -0.40) return {e:"😄",t:"Cheerful",d:"Your watchlist trades above value. Be choosy; keep cash ready for the next sale.",avg};
+  return {e:"🤑",t:"Euphoric",d:"Mr Market is greedy. Buffett's rule: be fearful when others are greedy. Consider trimming anything in the sell zone.",avg};
+}
+function vDashboard(){
+  const tv = totalValue(), pr = portfolioReturn(), ir = indexReturn();
+  const {r,next} = rank(); const mood = moodOf();
+  const used = punchesUsed(), max = S.settings.punches;
+  const alerts = [];
+  for (const [code,h] of Object.entries(S.holdings)){
+    const c = S.companies[code]; if (!c) continue;
+    const a = analyse(c,S.settings);
+    if (a.sig.k==="sell") alerts.push(`<div class="alert bad"><b>${code}</b> is in the sell zone — ${esc(a.sig.why)} Consider trimming.</div>`);
+    if (h.qAtBuy!=null && h.qAtBuy - a.q.score >= 15) alerts.push(`<div class="alert warn"><b>${code}</b>: quality score fell from ${h.qAtBuy} to ${a.q.score}. Re-check your thesis — a broken business is Buffett's main reason to sell.</div>`);
+  }
+  const opps = Object.values(S.companies).map(c=>({c,a:analyse(c,S.settings)})).filter(x=>x.a.sig.k==="strong"||x.a.sig.k==="buy");
+  opps.forEach(x=>alerts.push(`<div class="alert good"><b>${x.c.code}</b> is in the ${x.a.sig.k==="strong"?"strong ":""}buy zone at ${$(x.c.price)} (value ≈ ${$(x.a.iv)}).</div>`));
+  const intro = !S.seenIntro ? `<div class="card" style="margin-bottom:16px;border-color:var(--gold)">
+    <h2>Welcome to Omaha ASX</h2>
+    <p>You have <b>${$0(S.startCash)}</b> of virtual capital and a <b>${max}-slot punch card</b> — every purchase uses one punch, for life. Buffett's idea: if you could only make ${max} investments ever, you'd make each one count.</p>
+    <p>The analyser scores each ASX company on Buffett's quality tests and estimates intrinsic value. Buy great businesses below value, hold for years, and sell only when the price is silly or the business breaks. You earn XP for discipline and lose it for speculation.</p>
+    <p class="small muted">Starter prices are from mid-November 2026. Update them on the "Update prices" screen before your first trade.</p>
+    <div class="row"><button class="primary" onclick="S.seenIntro=true;save();go('watchlist')">Open the analyser</button><button onclick="S.seenIntro=true;save();go('academy')">Learn the rules first</button></div></div>` : "";
+  return `${intro}
+  <div class="row between" style="margin-bottom:14px"><h1>Dashboard</h1><button class="primary" onclick="go('prices')">🔄 Update prices</button></div>
+  ${stalePriceNote()}
+  <div class="grid g4" style="margin-bottom:16px">
+    <div class="card kpi"><div class="lbl">Portfolio value</div><div class="val">${$0(tv)}</div><div class="sub ${pr>=0?"up":"down"}">${sgn(pr)}${pct(pr)} since start</div></div>
+    <div class="card kpi"><div class="lbl">vs ASX 200</div><div class="val ${pr-ir>=0?"up":"down"}">${sgn(pr-ir)}${pct(pr-ir)}</div><div class="sub">Index ${sgn(ir)}${pct(ir)} (${S.index.level.toLocaleString()})</div></div>
+    <div class="card kpi"><div class="lbl">Cash</div><div class="val">${$0(S.cash)}</div><div class="sub">${pct(S.cash/tv,0)} of portfolio</div></div>
+    <div class="card kpi"><div class="lbl">Rank</div><div class="val" style="font:700 17px Fraunces,serif">${esc(r[1])}</div>
+      <div class="xpbar"><div style="width:${next?Math.min(100,(S.xp-r[0])/(next[0]-r[0])*100):100}%"></div></div>
+      <div class="sub">${S.xp} XP${next?` · ${next[0]-S.xp} to ${esc(next[1])}`:""}</div></div>
+  </div>
+  <div class="grid g3" style="margin-bottom:16px">
+    <div class="card"><h3>Mr Market's mood</h3><div class="row"><span class="mood">${mood.e}</span><div><b style="font-size:18px">${mood.t}</b>${mood.avg!=null?`<div class="small muted">Avg margin of safety ${pct(mood.avg,0)}</div>`:""}</div></div><p class="small" style="margin-bottom:0">${mood.d}</p></div>
+    <div class="card"><h3>Punch card</h3><div class="small muted">${used} of ${max} lifetime buys used</div><div class="punch">${Array.from({length:max},(_,i)=>`<span class="${i<used?"used":""}"></span>`).join("")}</div></div>
+    <div class="card"><h3>Performance</h3>${perfChart()}</div>
+  </div>
+  <div class="card"><h3>Signals & alerts</h3>${alerts.length?alerts.join(""):`<div class="muted small">No buy or sell signals right now. As Buffett puts it, there are no called strikes in investing — you can wait for your pitch.</div>`}</div>`;
+}
+function perfChart(){
+  const s = S.snapshots;
+  if (s.length < 2) return `<div class="small muted">Your portfolio vs the ASX 200 appears here after two or more price updates on different days.</div>`;
+  const W=320,H=150,P=24;
+  const pv = s.map(x=>x.v/s[0].v*100), iv = s.map(x=>x.i/s[0].i*100);
+  const all = pv.concat(iv); const lo=Math.min(...all), hi=Math.max(...all), span=(hi-lo)||1;
+  const X=i=>P+(W-P*2)*i/(s.length-1), Y=v=>H-P-(H-P*2)*(v-lo)/span;
+  const line=a=>a.map((v,i)=>`${i?"L":"M"}${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join("");
+  return `<div class="chartbox"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Portfolio versus ASX 200, indexed to 100">
+    <line x1="${P}" x2="${W-P}" y1="${Y(100)}" y2="${Y(100)}" stroke="#e2ddd1" stroke-dasharray="3 3"/>
+    <path d="${line(iv)}" fill="none" stroke="#9aa39f" stroke-width="2"/>
+    <path d="${line(pv)}" fill="none" stroke="#1f6b4a" stroke-width="2.5"/>
+    <text x="${W-P}" y="${Y(pv[pv.length-1])-6}" text-anchor="end" font-size="11" fill="#1f6b4a" font-weight="700">You ${pv[pv.length-1].toFixed(1)}</text>
+    <text x="${W-P}" y="${Y(iv[iv.length-1])+14}" text-anchor="end" font-size="11" fill="#66706b">ASX 200 ${iv[iv.length-1].toFixed(1)}</text>
+    <text x="${P}" y="${H-6}" font-size="10" fill="#66706b">${esc(s[0].d)}</text><text x="${W-P}" y="${H-6}" font-size="10" fill="#66706b" text-anchor="end">${esc(s[s.length-1].d)}</text>
+  </svg></div>`;
+}
+function zoneBar(a){
+  if (!(a.iv>0) || !isFinite(a.req)) return `<div class="small muted" style="margin:10px 0">No buy zone — ${a.q.score<50?"quality too low":"needs positive earnings"}.</div>`;
+  const lo = Math.min(a.strongAt, a.price)*0.85, hi = Math.max(a.sellAt, a.price)*1.08, span = hi-lo;
+  const w = v => Math.max(0,(v-lo)/span*100);
+  const segs = [[w(a.strongAt),"#1f6b4a"],[w(a.buyAt)-w(a.strongAt),"#8cc4a5"],[w(a.iv)-w(a.buyAt),"#d6d3ca"],[w(a.sellAt)-w(a.iv),"#ebcf96"],[100-w(a.sellAt),"#d98b80"]];
+  return `<div class="zonebar">${segs.map(([wd,c])=>`<div style="width:${wd}%;background:${c}"></div>`).join("")}
+    <div class="marker" style="left:${w(a.price)}%">${$(a.price)}</div></div>
+    <div class="zlabels"><span>◀ strong buy ≤ ${$(a.strongAt)}</span><span>buy ≤ ${$(a.buyAt)}</span><span>value ${$(a.iv)}</span><span>sell ≥ ${$(a.sellAt)} ▶</span></div>`;
+}
+function optionsFor(c, a, h){
+  const o = [];
+  const gapBuy = a.buyAt>0 ? 1 - a.buyAt/c.price : null;   // % fall needed to reach the buy zone
+  const k = a.sig.k;
+  if (k==="avoid"){
+    o.push(["Pass","Doesn't meet Buffett's quality bar. Leave it, or re-score it if you think the inputs are too harsh."]);
+    if (h) o.push(["Sell on strength","You own a business that fails the quality test. Consider exiting when the price allows."]);
+  } else if (k==="strong"){
+    o.push(["Buy a full position","Deep discount to value on a quality business — this is the 'fat pitch'."]);
+    o.push(["Buy in two halves","Half now and half if it falls another 10%. That gives you some protection if your value estimate is too high."]);
+    o.push(["Check what's broken","Big discounts often come with bad news. Make sure it's temporary, not a damaged moat."]);
+  } else if (k==="buy"){
+    o.push(["Start a position","Inside the buy zone. Consider a starter stake (half your intended size)."]);
+    o.push(["Wait for strong buy",`Add more at or below ${$(a.strongAt)}.`]);
+  } else if (k==="hold"){
+    o.push(["Wait patiently",`Buy zone starts at ${$(a.buyAt)} — ${pct(gapBuy,0)} below today's price.`]);
+    if (h) o.push(["Hold","Owned and fairly priced — let it compound."]);
+    o.push(["Re-check the inputs","Near value, so small changes to growth or earnings swing the call. Make sure your numbers are realistic."]);
+  } else if (k==="over"){
+    if (h) o.push(["Hold, don't add","Above value but not extreme. Buffett rarely sells a good business just for being pricey."]);
+    else o.push(["Watch only",`Needs to fall ${pct(gapBuy,0)} to reach the buy zone at ${$(a.buyAt)}.`]);
+    o.push(["Set your buy price",`Note ${$(a.buyAt)} as your target and check it after each price update.`]);
+  } else if (k==="sell"){
+    if (h){ o.push(["Trim","Sell part of your holding (say a third to half) and keep a core stake in a quality business."]);
+            o.push(["Sell all","If you have a better use for the cash, Mr Market is overpaying right now."]);
+            o.push(["Hold","Defensible for a wonderful business if you're confident in growth above the model's assumption — but don't add."]); }
+    else o.push(["Don't chase",`Price is far above value. It needs to fall ${pct(gapBuy,0)} to reach the buy zone at ${$(a.buyAt)}.`]);
+  }
+  if (h && h.qAtBuy - a.q.score >= 15) o.unshift(["Review thesis",`Quality fell from ${h.qAtBuy} to ${a.q.score} since you bought. If the moat is damaged, selling is the Buffett move.`]);
+  return o;
+}
+function coCard(c){
+  const a = analyse(c,S.settings); const h = S.holdings[c.code];
+  const opts = optionsFor(c,a,h);
+  return `<div class="card">
+    <div class="co-head"><div><div class="co-code">${esc(c.code)} <span class="pill">${esc(c.sector)}</span></div><div class="muted small">${esc(c.name)} · price as at ${esc(c.priceDate)}</div></div>${badge(a.sig)}</div>
+    <div class="stats">
+      <div><span>Price</span><b>${$(c.price)}</b></div>
+      <div><span>Intrinsic value</span><b>${$(a.iv)}</b></div>
+      <div><span>Margin of safety</span><b class="${a.mos>=0?"up":"down"}">${isFinite(a.mos)?pct(a.mos,0):"—"}</b></div>
+      <div><span>Quality</span><b>${a.q.score}/100</b></div>
+    </div>
+    ${zoneBar(a)}
+    <div class="small"><b>${esc(a.q.grade)}.</b> ${esc(a.sig.why)} ${isFinite(a.req)?`Required margin for this quality: ${pct(a.req,0)}.`:""}</div>
+    <div class="opts">${opts.map(([t,d])=>`<div><b>${esc(t)}</b> — ${esc(d)}</div>`).join("")}</div>
+    <details style="margin-top:10px"><summary class="small" style="cursor:pointer;font-weight:600">Quality breakdown & notes</summary>
+      <table style="margin-top:6px">${a.q.parts.map(p=>`<tr><td>${p[0]}<div class="small muted">${esc(p[3])}</div></td><td style="width:40%"><div class="qbar"><div style="width:${p[1]/p[2]*100}%"></div></div></td><td class="r num">${p[1]}/${p[2]}</td></tr>`).join("")}</table>
+      <p class="small muted">P/E ${(c.price/(c.ownerEps||c.eps)).toFixed(1)} · yield ${pct(c.dps/c.price)} · EPS used ${$(c.ownerEps||c.eps)}</p>
+      <p class="small">${esc(c.notes||"")}</p>
+    </details>
+    <div class="row" style="margin-top:12px">
+      <button class="good" onclick="openBuy('${c.code}')">Buy</button>
+      ${h?`<button class="bad" onclick="openSell('${c.code}')">Sell</button>`:""}
+      <button onclick="openEdit('${c.code}')">Edit fundamentals</button>
+      ${h?`<span class="small muted">You own ${h.shares} @ ${$(h.cost/h.shares)}</span>`:""}
+    </div></div>`;
+}
+function advisor(){
+  const rows = Object.values(S.companies).map(c=>({c,a:analyse(c,S.settings)}));
+  if (!rows.length) return "";
+  const count = k => rows.filter(r=>r.a.sig.k===k).length;
+  const labels = [["strong","Strong buy"],["buy","Buy zone"],["hold","Hold · fair"],["over","Hold · overvalued"],["sell","Sell / trim"],["avoid","Avoid"]];
+  const closest = rows.filter(r=>r.a.buyAt>0).map(r=>({...r,gap:r.c.price/r.a.buyAt-1})).sort((x,y)=>x.gap-y.gap).slice(0,3);
+  const buys = rows.filter(r=>r.a.sig.k==="buy"||r.a.sig.k==="strong");
+  const sells = rows.filter(r=>r.a.sig.k==="sell");
+  let head;
+  if (buys.length) head = `<b>${buys.map(r=>r.c.code).join(", ")}</b> ${buys.length>1?"are":"is"} in the buy zone. Start there — and read the notes for why each one is cheap.`;
+  else head = `Nothing on your watchlist is in the buy zone. That's normal in a pricey market: Buffett would keep cash and wait. The nearest candidates are below.`;
+  return `<div class="card" style="margin-bottom:16px"><h3>Watchlist advisor</h3>
+    <div class="sumrow">${labels.map(([k,l])=>count(k)?`<span class="badge b-${k}">${count(k)} ${l}</span>`:"").join("")}</div>
+    <p class="small" style="margin:6px 0">${head}${sells.length?` <b>${sells.map(r=>r.c.code).join(", ")}</b> ${sells.length>1?"are":"is"} in the sell zone — if you own ${sells.length>1?"them":"it"}, consider trimming.`:""}</p>
+    <table><thead><tr><th>Closest to buy zone</th><th class="r">Price</th><th class="r">Buy at</th><th class="r">Needs to fall</th></tr></thead><tbody>
+    ${closest.map(r=>`<tr><td><b>${r.c.code}</b> ${badge(r.a.sig)}</td><td class="r num">${$(r.c.price)}</td><td class="r num">${$(r.a.buyAt)}</td><td class="r num">${r.gap<=0?"In zone":pct(r.gap/(1+r.gap),0)}</td></tr>`).join("")}
+    </tbody></table></div>`;
+}
+let wlSort = "signal";
+function vWatchlist(){
+  const order = {strong:0,buy:1,hold:2,over:3,sell:4,na:5,avoid:6};
+  const cos = Object.values(S.companies).sort((x,y)=>{
+    if (wlSort==="quality") return quality(y).score-quality(x).score;
+    if (wlSort==="mos") return analyse(y,S.settings).mos-analyse(x,S.settings).mos;
+    return order[analyse(x,S.settings).sig.k]-order[analyse(y,S.settings).sig.k];
+  });
+  return `<div class="row between" style="margin-bottom:14px"><h1>Analyser</h1>
+    <div class="row"><select style="width:auto" onchange="wlSort=this.value;render()">
+      <option value="signal" ${wlSort==="signal"?"selected":""}>Sort: signal</option>
+      <option value="mos" ${wlSort==="mos"?"selected":""}>Sort: margin of safety</option>
+      <option value="quality" ${wlSort==="quality"?"selected":""}>Sort: quality</option></select>
+    <button class="primary" onclick="openEdit(null)">+ Add ASX company</button></div></div>
+  ${stalePriceNote()}
+  ${advisor()}
+  <div class="grid g2">${cos.map(coCard).join("") || `<div class="card empty">No companies yet.</div>`}</div>`;
+}
+/* ---------- ASX 200 screener ---------- */
+let scrQ = "", scrSig = "all";
+function scored(){ return Object.assign({}, S.screen, S.companies); }
+function boards(){
+  const rows = Object.values(scored()).map(c=>({c,a:analyse(c,S.settings)})).filter(r=>r.a.iv>0);
+  const buy = rows.filter(r=>isFinite(r.a.req)&&r.a.buyAt>0).sort((x,y)=>x.c.price/x.a.buyAt - y.c.price/y.a.buyAt).slice(0,10);
+  const hold = rows.filter(r=>r.a.sig.k==="hold"||r.a.sig.k==="over").sort((x,y)=>y.a.q.score-x.a.q.score || x.c.price/x.a.iv - y.c.price/y.a.iv).slice(0,10);
+  let sell = rows.filter(r=>r.a.sig.k==="sell").sort((x,y)=>(y.c.price/y.a.iv)-(x.c.price/x.a.iv));
+  if (sell.length<10) sell = sell.concat(rows.filter(r=>r.a.sig.k==="avoid").sort((x,y)=>x.a.q.score-y.a.q.score));
+  return {buy, hold, sell:sell.slice(0,10), n:rows.length};
+}
+function boardTable(list, kind){
+  if (!list.length) return `<div class="empty small">Nothing qualifies yet — import more data below.</div>`;
+  const metric = r => {
+    if (kind==="buy"){ const g = 1 - r.a.buyAt/r.c.price; return g<=0 ? `<span class="up">In zone (${pct(-g,0)} below)</span>` : `${pct(g,0)} to fall`; }
+    if (kind==="hold") return esc(r.a.q.grade);
+    return r.a.sig.k==="avoid" ? "Low quality" : `<span class="down">+${pct(r.c.price/r.a.iv-1,0)} over value</span>`;
+  };
+  return `<table><thead><tr><th>#</th><th>Code</th><th class="r">Price</th><th class="r hide-m">Value</th><th class="r">Q</th><th>${kind==="buy"?"Distance":kind==="hold"?"Quality":"Gap"}</th><th></th></tr></thead><tbody>
+  ${list.map((r,i)=>`<tr><td class="num">${i+1}</td><td><b>${esc(r.c.code)}</b>${r.c.auto?` <span class="pill" title="Some inputs are estimates">est.</span>`:""}<div class="small muted hide-m">${esc(r.c.name)}</div></td>
+    <td class="r num">${$(r.c.price)}</td><td class="r num hide-m">${$(r.a.iv)}</td><td class="r num">${r.a.q.score}</td><td class="small">${metric(r)}</td>
+    <td class="r">${S.companies[r.c.code]?`<button onclick="go('watchlist')">View</button>`:`<button onclick="addWatch('${r.c.code}')">+ Watch</button>`}</td></tr>`).join("")}
+  </tbody></table>`;
+}
+function vScreener(){
+  const b = boards(); const sc = scored();
+  const q = scrQ.trim().toLowerCase();
+  const rows = ASX200.map(m=>{ const c=sc[m.code]; const a=c?analyse(c,S.settings):null; return {m,c,a}; })
+    .filter(r=>!q || r.m.code.toLowerCase().includes(q) || r.m.name.toLowerCase().includes(q) || r.m.sector.toLowerCase().includes(q))
+    .filter(r=>scrSig==="all" || (scrSig==="nodata" ? !r.c : (r.a && r.a.sig.k===scrSig)));
+  const withData = ASX200.filter(m=>sc[m.code]).length;
+  return `<div class="row between" style="margin-bottom:6px"><h1>ASX 200 screener</h1><span class="pill">${withData} of 200 scored</span></div>
+  <p class="small muted" style="margin-top:0">The Top 10 lists rank every company that has data. Companies marked <span class="pill">est.</span> use live price and P/E, but Claude's rough estimates for ROE, debt, moat and management — open them in the analyser and check before buying. Import a screener export below to score the rest of the index.</p>
+  <div class="grid boards" style="margin-bottom:16px">
+    <div class="card"><h3>🟢 Top 10 Buy</h3><div class="small muted" style="margin-bottom:6px">Quality businesses ranked by how close the price is to (or below) its buy price.</div>${boardTable(b.buy,"buy")}</div>
+    <div class="card"><h3>⚪ Top 10 Hold</h3><div class="small muted" style="margin-bottom:6px">Best-quality businesses trading between buy and sell zones — keep if owned.</div>${boardTable(b.hold,"hold")}</div>
+    <div class="card"><h3>🔴 Top 10 Sell</h3><div class="small muted" style="margin-bottom:6px">Most overvalued versus intrinsic value — trim if owned, don't chase.</div>${boardTable(b.sell,"sell")}</div>
+  </div>
+  <div class="card" style="margin-bottom:16px">
+    <div class="row between"><h3 style="margin:0">All 200 companies</h3>
+      <div class="row"><input style="width:180px" placeholder="Search code, name, sector" value="${esc(scrQ)}" onchange="scrQ=this.value;render()">
+      <select style="width:auto" onchange="scrSig=this.value;render()">${[["all","All"],["strong","Strong buy"],["buy","Buy zone"],["hold","Hold · fair"],["over","Hold · overvalued"],["sell","Sell / trim"],["avoid","Avoid"],["nodata","Needs data"]].map(([v,l])=>`<option value="${v}" ${scrSig===v?"selected":""}>${l}</option>`).join("")}</select></div></div>
+    <div style="max-height:560px;overflow:auto;margin-top:10px"><table><thead><tr><th>Code</th><th class="hide-m">Company</th><th class="hide-m">Sector</th><th class="r">Price</th><th class="r">Q</th><th>Signal</th><th></th></tr></thead><tbody>
+    ${rows.map(r=>`<tr><td><b>${esc(r.m.code)}</b></td><td class="hide-m small">${esc(r.m.name)}</td><td class="hide-m small muted">${esc(r.m.sector)}</td>
+      <td class="r num">${r.c?$(r.c.price):"—"}</td><td class="r num">${r.a?r.a.q.score:"—"}</td><td>${r.a?badge(r.a.sig):`<span class="badge b-na">Needs data</span>`}</td>
+      <td class="r">${r.c ? (S.companies[r.m.code]?`<span class="small muted">Watching</span>`:`<button onclick="addWatch('${r.m.code}')">+ Watch</button>`) : `<button onclick="openEditFor('${r.m.code}')">Add data</button>`}</td></tr>`).join("") || `<tr><td colspan="7" class="empty">No matches.</td></tr>`}
+    </tbody></table></div></div>
+  <div class="card"><h3>Bulk import (score the whole index)</h3>
+    <p class="small">Paste a CSV with a header row — for example an export from your broker, Market Index, Simply Wall St or a spreadsheet. Recognised columns (any order, case-insensitive): <span class="mono">code, price, eps</span> <i>or</i> <span class="mono">pe</span>, <span class="mono">dps</span> <i>or</i> <span class="mono">yield</span>, <span class="mono">roe, de, margin, growth, loss_years, moat (0–3), mgmt (0–2)</span>. Only <b>code</b>, <b>price</b> and <b>eps or pe</b> are required. Missing quality fields get cautious defaults and the company is marked <span class="pill">est.</span></p>
+    <textarea id="csvbox" class="mono" style="min-height:120px" placeholder="code,price,pe,yield,roe,de,margin,growth&#10;ALL,64.32,28.5,1.3,22,0.2,25,8&#10;XRO,..."></textarea>
+    <div class="row" style="margin-top:8px"><button class="primary" onclick="importCSV()">Import & score</button><span id="csvmsg" class="small muted"></span></div></div>`;
+}
+function addWatch(code){
+  const c = S.screen[code]; if (!c) return;
+  S.companies[code] = c; delete S.screen[code]; save(); render();
+  toast(`${esc(code)} added to your analyser watchlist.`);
+}
+function openEditFor(code){
+  const m = ASX200_MAP[code] || {code, name:"", sector:""};
+  openEdit(null);
+  const set=(id,v)=>{ const el=document.getElementById("e_"+id); if(el) el.value=v; };
+  set("code",m.code); set("name",m.name); set("sector",m.sector);
+  const fin = document.getElementById("e_fin"); if (fin) fin.checked = isFinSector(m.sector);
+  previewEdit();
+}
+function importCSV(){
+  const txt = (document.getElementById("csvbox").value||"").trim(); if (!txt) return;
+  const lines = txt.split(/\r?\n/).filter(l=>l.trim());
+  const delim = lines[0].includes("\t") ? "\t" : lines[0].includes(";") && !lines[0].includes(",") ? ";" : ",";
+  const split = l => { const out=[]; let cur="", q=false; for (const ch of l){ if(ch==='"'){q=!q;continue;} if(ch===delim&&!q){out.push(cur);cur="";} else cur+=ch; } out.push(cur); return out.map(s=>s.trim()); };
+  const head = split(lines[0]).map(h=>h.toLowerCase().replace(/[^a-z0-9\/]/g,""));
+  const A = {code:["code","symbol","ticker","asxcode","asx"], price:["price","last","lastprice","close","shareprice"], eps:["eps","earningspershare"], pe:["pe","p/e","peratio","per"],
+    dps:["dps","dividend","dividendpershare"], yield:["yield","dividendyield","divyield","dy"], roe:["roe","returnonequity"], de:["de","d/e","debt/equity","debttoequity","debtequity","gearing"],
+    margin:["margin","netmargin","netprofitmargin","profitmargin"], growth:["growth","epsgrowth","growthpa"], loss:["lossyears","loss"], moat:["moat"], mgmt:["mgmt","management"]};
+  const idx = {}; for (const k in A) idx[k] = head.findIndex(h=>A[k].includes(h));
+  if (idx.code<0 || idx.price<0 || (idx.eps<0 && idx.pe<0)){ document.getElementById("csvmsg").textContent = "Need at least code, price and eps (or pe) columns in the header row."; return; }
+  const num = s => { if (s==null) return NaN; const v = parseFloat(String(s).replace(/[$,%\s]/g,"")); return v; };
+  let ok=0, skipped=[];
+  const d = today();
+  for (const l of lines.slice(1)){
+    const f = split(l); const g = k => idx[k]>=0 ? f[idx[k]] : undefined;
+    const code = String(g("code")||"").toUpperCase().replace(/^ASX:/,"").replace(/\.AX$/,"").trim();
+    const price = num(g("price")); let eps = num(g("eps")); const pe = num(g("pe"));
+    if (!(eps>0) && pe>0) eps = price/pe;
+    if (!code || !(price>0) || !isFinite(eps)){ if (code) skipped.push(code); continue; }
+    const meta = ASX200_MAP[code] || {name:code, sector:"—"};
+    const ex = S.companies[code] || S.screen[code];
+    const c = ex || {code, name:meta.name, sector:meta.sector, financial:isFinSector(meta.sector), ownerEps:0, dps:0, roe:12, de:0.5, margin:10, growth:5, lossYears:0, moat:1, mgmt:1, competence:true, custom:true, auto:true, priceHist:[], notes:"Imported from CSV. Missing quality inputs use cautious defaults — review them."};
+    c.price = price; c.eps = +eps.toFixed(4); c.priceDate = d; c.priceHist = (c.priceHist||[]).concat([{d,p:price}]).slice(-500);
+    let v;
+    if (isFinite(v=num(g("dps")))) c.dps = v; else if (isFinite(v=num(g("yield")))) c.dps = +(price*v/100).toFixed(4);
+    if (isFinite(v=num(g("roe")))) c.roe = v;
+    if (isFinite(v=num(g("de")))) c.de = v>5 ? v/100 : v;   // accept D/E as % or ratio
+    if (isFinite(v=num(g("margin")))) c.margin = v;
+    if (isFinite(v=num(g("growth")))) c.growth = v;
+    if (isFinite(v=num(g("loss")))) c.lossYears = Math.round(v);
+    if (isFinite(v=num(g("moat")))) c.moat = Math.max(0,Math.min(3,Math.round(v)));
+    if (isFinite(v=num(g("mgmt")))) c.mgmt = Math.max(0,Math.min(2,Math.round(v)));
+    if (S.companies[code]) S.companies[code] = c; else S.screen[code] = c;
+    ok++;
+  }
+  save(); render();
+  toast(`Imported ${ok} compan${ok===1?"y":"ies"}${skipped.length?`. Skipped (missing price/earnings): ${esc(skipped.slice(0,12).join(", "))}${skipped.length>12?"…":""}`:""}.`);
+}
+function vPortfolio(){
+  const rows = Object.entries(S.holdings).map(([code,h])=>{
+    const c=S.companies[code]; const a=analyse(c,S.settings);
+    const val=h.shares*c.price, gain=val-h.cost, age=daysBetween(h.firstBuy,today());
+    return `<tr><td><b>${code}</b><div class="small muted hide-m">${esc(c.name)}</div></td>
+      <td class="r num">${h.shares}</td><td class="r num hide-m">${$(h.cost/h.shares)}</td><td class="r num">${$0(val)}</td>
+      <td class="r num ${gain>=0?"up":"down"}">${sgn(gain)}${pct(gain/h.cost)}</td>
+      <td class="hide-m">${age} days</td><td>${badge(a.sig)}</td>
+      <td class="r"><button onclick="openDiv('${code}')" title="Record dividend">💰</button> <button class="bad" onclick="openSell('${code}')">Sell</button></td></tr>`;
+  }).join("");
+  const divs = S.trades.filter(t=>t.side==="div").reduce((a,t)=>a+t.amount,0);
+  return `<h1>Portfolio</h1>
+  <div class="grid g3" style="margin-bottom:16px">
+    <div class="card kpi"><div class="lbl">Invested</div><div class="val">${$0(holdingsValue())}</div></div>
+    <div class="card kpi"><div class="lbl">Cash</div><div class="val">${$0(S.cash)}</div></div>
+    <div class="card kpi"><div class="lbl">Dividends received</div><div class="val">${$0(divs)}</div><div class="sub">Tap 💰 when a holding pays one</div></div>
+  </div>
+  <div class="card">${rows?`<table><thead><tr><th>Code</th><th class="r">Shares</th><th class="r hide-m">Avg cost</th><th class="r">Value</th><th class="r">Gain</th><th class="hide-m">Held</th><th>Signal</th><th></th></tr></thead><tbody>${rows}</tbody></table>`
+    :`<div class="empty">No holdings yet. Head to the <a href="#watchlist" onclick="go('watchlist');return false">analyser</a> and wait for a fat pitch.</div>`}</div>`;
+}
+function vPrices(){
+  const lines = Object.values(S.companies).map(c=>`${c.code} ${c.price}`).concat([`XJO ${S.index.level}`]).join("\n");
+  return `<h1>Update prices</h1>
+  ${livePanel()}
+  <div class="card" style="margin-bottom:16px">
+    <h3>Manual update</h3>
+    <p class="small">Paste the latest closing prices — one per line, code then price. <b>XJO</b> is the ASX 200 index level, used as your benchmark. Free sources: ASX.com.au, Market Index, CommSec or Google Finance. Each update records a point on your performance chart.</p>
+    <textarea id="pxbox" style="min-height:180px" class="mono">${esc(lines)}</textarea>
+    <div class="row" style="margin-top:10px"><label style="margin:0">Price date</label><input id="pxdate" type="date" value="${today()}" style="width:auto"><button class="primary" id="pxgo">Apply prices</button></div>
+    <div id="pxmsg" class="small" style="margin-top:8px"></div>
+  </div>
+  <div class="card"><h3>When to use the paste box</h3><p class="small muted" style="margin:0">Use it for the XJO index level, for companies your live sync couldn't reach today, or when you're offline. Pasted prices and live prices go into the same history.</p></div>`;
+}
+function wirePrices(){
+  document.getElementById("pxgo").onclick = ()=>{
+    const d = document.getElementById("pxdate").value || today();
+    const out=[], bad=[];
+    document.getElementById("pxbox").value.split(/\n+/).forEach(line=>{
+      const m = line.trim().toUpperCase().match(/^([A-Z0-9]{2,6})[\s,:=$]+\$?([\d,]*\.?\d+)/);
+      if (!m) { if (line.trim()) bad.push(line.trim()); return; }
+      const code=m[1], p=parseFloat(m[2].replace(/,/g,""));
+      if (code==="XJO"){ S.index.level=p; S.index.date=d; S.index.hist.push({d,v:p}); out.push("XJO"); }
+      else if (S.companies[code] || S.screen[code]){ const c=S.companies[code]||S.screen[code]; c.price=p; c.priceDate=d; c.priceHist.push({d,p}); c.priceHist=c.priceHist.slice(-500); out.push(code); }
+      else bad.push(code+" (not in your watchlist)");
+    });
+    snapshot(); save();
+    render();
+    toast(`Updated ${out.length} price${out.length===1?"":"s"}${bad.length?`. Skipped: ${esc(bad.join(", "))}`:""}.`);
+  };
+}
+/* ---------- Live market data via the viewer's Alpha Vantage connector ---------- */
+const AV_SERVER = "Alpha Vantage MCP Server", AV_TOOL = "GLOBAL_QUOTE";
+const live = {mcp:null, ready:false, running:false, abort:false, msg:"", argName:"symbol", suffix:null, log:[]};
+function liveCfg(){
+  if (!S.live) S.live = {};
+  const def = {budget:20, gapSec:13, auto:false, day:"", used:0, lastSync:null, suffix:null, scope:"watch"};
+  for (const k in def) if (S.live[k]===undefined) S.live[k] = def[k];
+  if (S.live.day !== today()){ S.live.day = today(); S.live.used = 0; }
+  return S.live;
+}
+async function initLive(){
+  if (HOSTED){ live.ready = true; setInterval(()=>{ if (!document.hidden) pullPrices(true); }, 10*60*1000); return; }
+  try{ if (!window.claude || !claude.use) return; live.mcp = await claude.use("mcp"); }catch(e){ live.mcp = null; }
+  live.ready = true;
+  if (view==="prices") render();
+  const cfg = liveCfg();
+  if (live.mcp && cfg.auto && cfg.lastSync && cfg.lastSync.slice(0,10) !== today()) syncLive();
+}
+function syncQueue(){
+  const cfg = liveCfg();
+  const held = Object.keys(S.holdings);
+  const watch = Object.values(S.companies).filter(c=>!held.includes(c.code)).sort((a,b)=>(a.priceDate||"").localeCompare(b.priceDate||"")).map(c=>c.code);
+  const scr = cfg.scope==="all" ? Object.values(S.screen).sort((a,b)=>(a.priceDate||"").localeCompare(b.priceDate||"")).map(c=>c.code) : [];
+  const fresh = code => { const c=S.companies[code]||S.screen[code]; return c && c.priceDate===today() && c.liveAt; };
+  return [...held, ...watch, ...scr].filter(c=>!fresh(c));
+}
+function findPrice(p){
+  if (p==null) return NaN;
+  if (typeof p === "string"){
+    try { return findPrice(JSON.parse(p)); } catch(e){}
+    const m = p.match(/price"?\s*[:=]\s*"?([\d.]+)/i); return m ? parseFloat(m[1]) : NaN;
+  }
+  if (typeof p === "object"){
+    for (const [k,v] of Object.entries(p)){ if (/(^|\W|\d\.\s?)price$/i.test(k.trim()) && isFinite(parseFloat(v))) return parseFloat(v); }
+    for (const v of Object.values(p)){ if (v && typeof v === "object"){ const r = findPrice(v); if (isFinite(r)) return r; } }
+  }
+  return NaN;
+}
+function findDate(p){
+  try{ const s = typeof p==="string" ? p : JSON.stringify(p); const m = s.match(/latest trading day"?\s*:\s*"?(\d{4}-\d{2}-\d{2})/i); return m ? m[1] : null; }catch(e){ return null; }
+}
+async function quote(code){
+  const tries = live.suffix ? [live.suffix] : [".AX",".AUS"];
+  let lastErr = null;
+  for (const sfx of tries){
+    const input = {}; input[live.argName] = code + sfx;
+    try{
+      const r = await live.mcp.callTool(AV_SERVER, AV_TOOL, input, {cache:false});
+      const price = findPrice(r.payload ?? (r.content||[]).map(b=>b.text||"").join("\n"));
+      if (price > 0){ live.suffix = sfx; liveCfg().suffix = sfx; return {price, date:findDate(r.payload)}; }
+      lastErr = {code:"no_data", message:`No quote returned for ${code}${sfx}`};
+    }catch(e){
+      if (e && e.code === "tool_error" && live.argName==="symbol"){
+        // Learn the real argument name from the tool's schema, then retry once.
+        try{ const d = await live.mcp.describeTool(AV_SERVER, AV_TOOL); const props = Object.keys(d.inputSchema?.properties||{});
+             const nm = props.find(p=>/symbol|ticker/i.test(p)); if (nm && nm!=="symbol"){ live.argName = nm; return quote(code); } }catch(_){}
+      }
+      if (e && e.code !== "tool_error") throw e;   // connector-level problems stop the sync
+      lastErr = e;
+    }
+  }
+  throw lastErr || {code:"no_data", message:"No quote"};
+}
+function liveErrorText(e){
+  const c = e && e.code;
+  return ({
+    server_not_connected:`Alpha Vantage isn't connected. Add "Alpha Vantage MCP Server" in claude.ai Settings → Connectors (free key from alphavantage.co), then press Sync again.`,
+    needs_reauth:`Your Alpha Vantage connection has lapsed. Reconnect it in claude.ai Settings → Connectors.`,
+    selection_required:`You have more than one Alpha Vantage connector — choose one in the prompt claude.ai shows, then sync again.`,
+    not_in_manifest:`Live prices aren't allowed for this page. Re-enable Alpha Vantage for this artifact when claude.ai asks.`,
+    approval_required:`Live prices need your approval — press Sync and choose Allow when claude.ai asks.`,
+    blocked_by_policy:`Your organisation's policy blocks this connector.`,
+    not_granted:`Connectors aren't available in this view. Open the game on claude.ai to sync live prices.`,
+    capability_disabled:`Connectors aren't available in this view. Open the game on claude.ai to sync live prices.`,
+    server_unavailable:`Alpha Vantage didn't respond. Try again in a minute.`,
+    tool_error:`Alpha Vantage returned an error: ${e && e.message ? String(e.message).slice(0,160) : ""}`,
+    no_data:`No quote came back. Free Alpha Vantage keys allow 25 requests a day — you may have hit the limit.`
+  })[c] || `Sync stopped: ${esc(e && (e.message||e.code) || "unknown error")}`;
+}
+async function syncLive(){
+  if (live.running || !live.mcp) return;
+  const cfg = liveCfg();
+  const q = syncQueue().slice(0, Math.max(0, cfg.budget - cfg.used));
+  if (!q.length){ live.msg = cfg.used>=cfg.budget ? `Today's request budget (${cfg.budget}) is used. Prices sync again tomorrow, or raise the budget if you have a paid key.` : "Everything in scope already has today's live price."; render(); return; }
+  live.running = true; live.abort = false; live.log = []; let ok = 0;
+  for (let i=0;i<q.length && !live.abort;i++){
+    const code = q[i]; live.msg = `Fetching ${code} (${i+1}/${q.length})…`; if (view==="prices") render();
+    try{
+      const r = await quote(code); cfg.used++;
+      const c = S.companies[code] || S.screen[code];
+      const d = r.date || today();
+      c.price = r.price; c.priceDate = today(); c.liveAt = new Date().toISOString(); c.priceHist = (c.priceHist||[]).concat([{d,p:r.price}]).slice(-500);
+      live.log.push(`✓ ${code} ${$(r.price)}`); ok++;
+    }catch(e){
+      cfg.used++;
+      live.log.push(`✗ ${code}`);
+      if (e && e.code && e.code!=="tool_error" && e.code!=="no_data"){ live.msg = liveErrorText(e); live.running=false; save(); render(); return; }
+      if (e && e.code==="no_data" && ok===0 && i>=1){ live.msg = liveErrorText(e); break; }
+    }
+    if (i < q.length-1 && !live.abort) await new Promise(r=>setTimeout(r, cfg.gapSec*1000));
+  }
+  cfg.lastSync = new Date().toISOString();
+  snapshot(); save();
+  live.running = false;
+  live.msg = live.msg && live.msg.startsWith("No quote") ? live.msg : `Synced ${ok} of ${q.length} prices from Alpha Vantage.${ok<q.length?" Some failed — see the log.":""}`;
+  render();
+  if (ok) toast(`🔄 Live prices updated for ${ok} compan${ok===1?"y":"ies"}.`);
+}
+function liveSettings(){
+  const n=id=>parseFloat(document.getElementById(id).value);
+  const cfg=liveCfg(); cfg.budget=Math.max(1,Math.round(n("lv_b"))); cfg.gapSec=Math.max(1,Math.round(n("lv_g")));
+  cfg.auto=document.getElementById("lv_auto").checked; cfg.scope=document.getElementById("lv_scope").value;
+  save(); toast("Live data settings saved."); render();
+}
+function livePanel(){
+  if (HOSTED) return hostedPanel();
+  const cfg = liveCfg(); const q = syncQueue();
+  if (!live.ready) return `<div class="card" style="margin-bottom:16px"><h3>🔴 Live market data</h3><p class="small muted">Checking for connectors…</p></div>`;
+  if (!live.mcp) return `<div class="card" style="margin-bottom:16px"><h3>🔴 Live market data</h3><p class="small">Live prices come from your own <b>Alpha Vantage</b> connector, which works when this game is open on claude.ai. Connectors aren't available in this view, so use the paste box below.</p></div>`;
+  return `<div class="card" style="margin-bottom:16px;border-color:var(--green)"><div class="row between"><h3 style="margin:0">🟢 Live market data · Alpha Vantage</h3>
+    <span class="small muted">${cfg.lastSync?`Last sync ${esc(new Date(cfg.lastSync).toLocaleString("en-AU"))}`:"Never synced"}</span></div>
+    <p class="small">Pulls the latest ASX quote for each company through your Alpha Vantage connector. Order: your holdings first, then your watchlist (stalest first)${cfg.scope==="all"?", then the ASX 200 screener":""}. Free keys allow <b>25 requests a day</b> and ~5 a minute, so the game paces itself.</p>
+    <div class="row"><button class="primary" ${live.running?"disabled":""} onclick="syncLive()">${live.running?"Syncing…":`🔄 Sync now (${Math.min(q.length, Math.max(0,cfg.budget-cfg.used))} to fetch)`}</button>
+      ${live.running?`<button onclick="live.abort=true">Stop</button>`:""}
+      <span class="small muted">Used today: ${cfg.used}/${cfg.budget}</span></div>
+    ${live.msg?`<div class="alert ${/isn't|lapsed|stopped|error|blocked|aren't|No quote|didn't/.test(live.msg)?"warn":"info"}" style="margin-top:10px">${live.msg}</div>`:""}
+    ${live.log.length?`<div class="small mono muted" style="margin-top:6px">${live.log.map(esc).join(" · ")}</div>`:""}
+    <details style="margin-top:10px"><summary class="small" style="cursor:pointer;font-weight:600">Settings</summary>
+      <div class="form-grid" style="margin-top:8px">
+        <div><label>Daily request budget (free key: 25)</label><input id="lv_b" type="number" value="${cfg.budget}"></div>
+        <div><label>Seconds between requests (free key: 13)</label><input id="lv_g" type="number" value="${cfg.gapSec}"></div>
+        <div><label>What to sync</label><select id="lv_scope"><option value="watch" ${cfg.scope==="watch"?"selected":""}>Holdings + watchlist</option><option value="all" ${cfg.scope==="all"?"selected":""}>Also the ASX 200 screener (paid key)</option></select></div>
+        <label class="check"><input type="checkbox" id="lv_auto" ${cfg.auto?"checked":""}> Sync automatically the first time I open the game each day</label>
+      </div><button style="margin-top:8px" onclick="liveSettings()">Save</button>
+      <p class="small muted">With a paid Alpha Vantage key (from US$49.99/month, no daily cap) set the budget to 250 and the gap to 1 second to refresh the whole ASX 200. The ASX 200 index level (XJO) still updates from the paste box.</p></details>
+  </div>`;
+}
+function vJournal(){
+  const rows = S.trades.map(t=>`<tr><td class="num">${esc(t.date)}</td><td><span class="badge ${t.side==="buy"?"b-buy":t.side==="sell"?"b-sell":"b-hold"}">${t.side}</span></td><td><b>${esc(t.code)}</b></td>
+    <td class="r num">${t.side==="div"?$(t.amount):`${t.shares} @ ${$(t.price)}`}</td><td class="small">${esc(t.reason||"")}${t.mos!=null?`<div class="muted">MoS ${pct(t.mos,0)} · quality ${t.q}</div>`:""}</td><td class="r num ${t.xp>=0?"up":"down"}">${t.xp!=null?sgn(t.xp)+t.xp:""}</td></tr>`).join("");
+  const xl = S.xpLog.slice(0,25).map(x=>`<tr><td class="num">${esc(x.d)}</td><td>${esc(x.reason)}</td><td class="r num ${x.xp>=0?"up":"down"}">${sgn(x.xp)}${x.xp}</td></tr>`).join("");
+  return `<h1>Journal</h1><div class="card" style="margin-bottom:16px"><h3>Trades</h3>${rows?`<table><thead><tr><th>Date</th><th>Type</th><th>Code</th><th class="r">Detail</th><th>Why</th><th class="r">XP</th></tr></thead><tbody>${rows}</tbody></table>`:`<div class="empty">No trades yet.</div>`}</div>
+  <div class="grid g2"><div class="card"><h3>Achievements</h3><div class="grid" style="gap:8px">${ACH.map(([id,ic,n,d])=>`<div class="ach ${S.ach[id]?"":"locked"}"><span class="ic">${ic}</span><div><b>${n}</b><div class="small muted">${d}${S.ach[id]?` · ${esc(S.ach[id])}`:""}</div></div></div>`).join("")}</div></div>
+  <div class="card"><h3>XP history</h3>${xl?`<table>${xl}</table>`:`<div class="muted small">Earn XP by investing like Buffett.</div>`}</div></div>`;
+}
+function vAcademy(){
+  const L = (t,body,rule)=>`<div class="lesson"><h3>${t}</h3><div class="small">${body}</div>${rule?`<div class="rule"><b>In the game:</b> ${rule}</div>`:""}</div>`;
+  return `<h1>Buffett school</h1><div class="card">
+  <p>Buffett's approach comes from his teacher Benjamin Graham, refined by Charlie Munger: treat a share as part-ownership of a real business, buy only what you understand, insist on a discount to value, then let time and compounding do the work.</p>
+  ${L("1. A share is a piece of a business","Don't think about squiggles on a chart. Ask: would I be happy owning this whole company, with no quote for ten years?","the buy checklist makes you confirm this before every purchase.")}
+  ${L("2. Stay inside your circle of competence","You don't need to understand everything — only to know where your knowledge ends. Avoid businesses whose economics you can't explain simply.","ticking 'I understand it' is worth 5 quality points; leaving it unticked drags the score.")}
+  ${L("3. Look for a durable moat","Great businesses have something competitors can't copy: a brand, network effect, low-cost position or switching costs. High, stable returns on equity with little debt are the fingerprint of a moat.","ROE (25 pts), moat (15), margins (10) and low debt (15) make up most of the quality score.")}
+  ${L("4. Wonderful company at a fair price","Buffett moved from Graham's 'cigar butts' to quality: a wonderful business at a fair price beats a fair business at a wonderful price.","required margin of safety is 10% for 80+ quality, 25% for 65–79, and 40% for 50–64. Below 50 it's always 'Avoid'.")}
+  ${L("5. Margin of safety","Value is an estimate, so buy well below it. The gap protects you from your own mistakes.","intrinsic value = 10 years of earnings growing at your assumption (capped at 15%), plus a terminal value, discounted at your required return (default 9%).")}
+  ${L("6. Mr Market","Picture a moody partner who offers to buy or sell every day. His prices are there to serve you, not to guide you. Buy from him when he's depressed; sell to him when he's euphoric.","the dashboard reads Mr Market's mood from the average margin of safety across your watchlist.")}
+  ${L("7. The 20-slot punch card","Buffett suggests acting as if you had a card with 20 punches for your whole life. You'd think hard about each one — and you'd do far better.","every buy uses a punch. When they're gone, you can only hold, sell or collect dividends.")}
+  ${L("8. Our favourite holding period is forever","Time is the friend of the wonderful business. Frequent trading adds costs, taxes and errors.","+200 XP at one year, +500 at three. Selling inside 30 days costs 100 XP.")}
+  ${L("9. When to sell","Rarely. Sell when (a) the business has fundamentally deteriorated, (b) the price is far beyond any sensible value, or (c) you need the money for a clearly better opportunity.","the sell zone starts 30% above intrinsic value. A 15-point drop in quality since you bought raises a 'review thesis' alert.")}
+  ${L("10. Be fearful when others are greedy","Crowds push prices to extremes in both directions. Discipline means acting against the mood, with cash ready.","you earn XP for buying in the buy zone and lose XP for buying overvalued or 'Avoid' stocks.")}
+  <p class="small muted">This is an educational game, not financial advice. The engine is a simplified model; real valuation needs judgment, annual reports and an understanding of each business.</p></div>`;
+}
+function vSettings(){
+  const s=S.settings;
+  return `<h1>Settings</h1>
+  <div class="card" style="margin-bottom:16px"><h3>Valuation assumptions</h3>
+    <div class="form-grid">
+      <div><label>Required return (discount rate) %</label><input id="s_r" type="number" step="0.5" value="${s.r*100}"></div>
+      <div><label>Terminal growth %</label><input id="s_tg" type="number" step="0.5" value="${s.tg*100}"></div>
+      <div><label>Margin of safety for "good" (65–79) companies %</label><input id="s_mos" type="number" step="1" value="${s.mosBuy*100}"></div>
+      <div><label>Sell zone: % above intrinsic value</label><input id="s_sell" type="number" step="5" value="${s.sellPremium*100}"></div>
+      <div><label>Brokerage per trade $</label><input id="s_b" type="number" step="1" value="${s.brokerage}"></div>
+      <div><label>Punch card size</label><input id="s_p" type="number" step="1" value="${s.punches}"></div>
+    </div>
+    <div class="row" style="margin-top:12px"><button class="primary" onclick="saveSettings()">Save settings</button></div></div>
+  <div class="card" style="margin-bottom:16px"><h3>Backup</h3><p class="small muted">Copy your save to keep a backup or move it to another device. Paste a save into the box and press Restore to load it.</p>
+    <textarea id="bk" class="mono" style="min-height:90px" placeholder="Paste a save here to restore"></textarea>
+    <div class="row" style="margin-top:8px"><button onclick="copySave()">Copy my save</button><button onclick="restoreSave()">Restore from box</button><button class="bad" onclick="confirmReset()">Start a new game</button></div></div>
+  <div class="card"><h3>Roadmap to a full PC + mobile app</h3><ol class="small">
+    <li><b>Live ASX prices</b> — a small backend (e.g. a scheduled job) pulls end-of-day prices from a market-data API such as EODHD, Twelve Data or Alpha Vantage and pushes them into the game.</li>
+    <li><b>Auto fundamentals</b> — import 10 years of EPS, ROE, debt and owner earnings per company, so quality scores update after each reporting season.</li>
+    <li><b>Native wrappers</b> — package this same web app with Tauri/Electron for PC and Capacitor for iOS/Android, with price alerts as push notifications.</li>
+    <li><b>Leagues</b> — compete with friends on risk-adjusted return and Buffett XP over multi-year seasons.</li></ol></div>`;
+}
+function saveSettings(){
+  const n=id=>parseFloat(document.getElementById(id).value);
+  const r=n("s_r")/100, tg=n("s_tg")/100;
+  if (!(r>tg)) { toast("Required return must be higher than terminal growth."); return; }
+  Object.assign(S.settings,{r,tg,mosBuy:n("s_mos")/100,sellPremium:n("s_sell")/100,brokerage:n("s_b"),punches:Math.max(1,Math.round(n("s_p")))});
+  save(); toast("Settings saved — all signals recalculated."); render();
+}
+async function copySave(){ try{ await navigator.clipboard.writeText(JSON.stringify(S)); toast("Save copied to clipboard."); } catch(e){ document.getElementById("bk").value = JSON.stringify(S); toast("Clipboard blocked — your save is in the box; copy it manually."); } }
+function restoreSave(){ try{ const o=JSON.parse(document.getElementById("bk").value); if(!o.companies||!o.settings) throw 0; S=o; save(); toast("Save restored."); go("dashboard"); } catch(e){ toast("That doesn't look like a valid save."); } }
+function confirmReset(){
+  modal(`<h2>Start a new game?</h2><p>This wipes your portfolio, trades and XP. Your watchlist resets to the starter companies.</p>
+  <div class="row"><button class="bad" onclick="S=freshState();save();closeModal();go('dashboard')">Yes, start over</button><button onclick="closeModal()">Cancel</button></div>`);
+}
+
+/* ---------- Modals ---------- */
+function modal(html){ document.getElementById("modal-root").innerHTML = `<div class="modal-bg" onclick="if(event.target===this)closeModal()"><div class="modal">${html}</div></div>`; }
+function closeModal(){ document.getElementById("modal-root").innerHTML = ""; }
+let toastT;
+function toast(html){ const r=document.getElementById("toast-root"); r.innerHTML=`<div class="toast">${html}</div>`; clearTimeout(toastT); toastT=setTimeout(()=>r.innerHTML="",5200); }
+
+function openEdit(code){
+  const c = code ? S.companies[code] : {code:"",name:"",sector:"",financial:false,price:0,priceDate:today(),eps:0,ownerEps:0,dps:0,roe:0,de:0,margin:0,growth:5,lossYears:0,moat:1,competence:true,mgmt:1,notes:""};
+  const f=(id,l,v,t="number",st="any")=>`<div><label>${l}</label><input id="e_${id}" type="${t}" step="${st}" value="${esc(v)}" oninput="previewEdit()"></div>`;
+  modal(`<h2>${code?"Edit "+esc(code):"Add an ASX company"}</h2>
+  <p class="small muted">Find these in the latest annual report or a site like Market Index. Use normalised (underlying) figures — Buffett values a business on its normal earning power, not one odd year.</p>
+  <div class="form-grid">
+    ${f("code","ASX code",c.code,"text")}${f("name","Company name",c.name,"text")}
+    ${f("sector","Sector",c.sector,"text")}${f("price","Share price $",c.price)}
+    ${f("eps","EPS (underlying) $",c.eps)}${f("ownerEps","Owner earnings / FCF per share $ (optional)",c.ownerEps||"")}
+    ${f("dps","Dividend per share $",c.dps)}${f("growth","Expected EPS growth % p.a. (be conservative)",c.growth)}
+    ${f("roe","Return on equity %",c.roe)}${f("de","Debt / equity (net)",c.de)}
+    ${f("margin","Net profit margin %",c.margin)}${f("lossYears","Loss years in last 10",c.lossYears,"number","1")}
+    <div><label>Economic moat</label><select id="e_moat" onchange="previewEdit()">${["None","Narrow","Solid","Wide"].map((m,i)=>`<option value="${i}" ${c.moat==i?"selected":""}>${m}</option>`).join("")}</select></div>
+    <div><label>Management</label><select id="e_mgmt" onchange="previewEdit()">${["Poor","OK","Excellent"].map((m,i)=>`<option value="${i}" ${c.mgmt==i?"selected":""}>${m}</option>`).join("")}</select></div>
+    <label class="check full"><input type="checkbox" id="e_fin" ${c.financial?"checked":""} onchange="previewEdit()"> Bank / insurer (score leverage via capital, not debt/equity)</label>
+    <label class="check full"><input type="checkbox" id="e_comp" ${c.competence?"checked":""} onchange="previewEdit()"> I understand how this business makes money (circle of competence)</label>
+    <div class="full"><label>Notes / thesis / sources</label><textarea id="e_notes">${esc(c.notes)}</textarea></div>
+  </div>
+  <div id="e_prev" class="alert info" style="margin-top:12px"></div>
+  <div class="row"><button class="primary" onclick="saveEdit('${code||""}')">Save</button><button onclick="closeModal()">Cancel</button>
+  ${code && !S.holdings[code]?`<button class="ghost" style="margin-left:auto;color:var(--red)" onclick="delete S.companies['${code}'];save();closeModal();render()">Remove from watchlist</button>`:""}</div>`);
+  previewEdit();
+}
+function readEdit(){
+  const v=id=>document.getElementById("e_"+id).value, n=id=>parseFloat(v(id))||0;
+  return {code:v("code").trim().toUpperCase(), name:v("name").trim(), sector:v("sector").trim()||"—", price:n("price"), eps:n("eps"), ownerEps:n("ownerEps"),
+    dps:n("dps"), growth:n("growth"), roe:n("roe"), de:n("de"), margin:n("margin"), lossYears:Math.round(n("lossYears")),
+    moat:+v("moat"), mgmt:+v("mgmt"), financial:document.getElementById("e_fin").checked, competence:document.getElementById("e_comp").checked, notes:v("notes")};
+}
+function previewEdit(){
+  const c = readEdit(); const a = analyse(c,S.settings);
+  document.getElementById("e_prev").innerHTML = `Quality <b>${a.q.score}/100</b> (${esc(a.q.grade)}) · intrinsic value <b>${$(a.iv)}</b> · margin of safety <b>${isFinite(a.mos)?pct(a.mos,0):"—"}</b> · ${badge(a.sig)}`;
+}
+function saveEdit(old){
+  const c = readEdit();
+  if (!/^[A-Z0-9]{2,6}$/.test(c.code)) { toast("Enter a valid ASX code (e.g. JBH)."); return; }
+  if (!(c.price>0)) { toast("Enter the current share price."); return; }
+  if (!old && S.companies[c.code]) { toast(c.code+" is already on your watchlist."); return; }
+  const prev = old ? S.companies[old] : null;
+  if (old && old!==c.code && S.holdings[old]) { toast("You can't rename a company you own."); return; }
+  const merged = Object.assign({}, prev||{custom:true, priceHist:[]}, c);
+  if (!prev || prev.price!==c.price){ merged.priceDate = today(); merged.priceHist = (merged.priceHist||[]).concat([{d:today(),p:c.price}]); }
+  if (old && old!==c.code) delete S.companies[old];
+  delete S.screen[c.code];
+  S.companies[c.code] = merged;
+  if (!prev) unlock("circle");
+  save(); closeModal(); render();
+}
+
+function openBuy(code){
+  const c=S.companies[code], a=analyse(c,S.settings), s=S.settings;
+  const left = s.punches - punchesUsed();
+  if (left<=0){ modal(`<h2>Punch card full</h2><p>You've used all ${s.punches} lifetime purchases. Like Buffett, you can now only hold, sell or collect dividends — or raise the card size in Settings (it's your game).</p><button onclick="closeModal()">OK</button>`); return; }
+  const maxSh = Math.floor((S.cash - s.brokerage)/c.price);
+  const warn = a.sig.k==="avoid" ? `<div class="alert bad">This company fails the quality test. Buying it costs 150 XP.</div>`
+    : (a.sig.k==="sell"||a.sig.k==="over") ? `<div class="alert warn">Price is above intrinsic value. Buying here costs 75 XP — Buffett would wait.</div>`
+    : (a.sig.k==="hold") ? `<div class="alert warn">Fair price, but not your required margin of safety (${pct(a.req,0)}). No XP penalty, no bonus.</div>`
+    : `<div class="alert good">In the buy zone — this is a disciplined purchase (+100 XP${a.sig.k==="strong"?", +50 strong-buy bonus":""}).</div>`;
+  modal(`<h2>Buy ${esc(code)} ${badge(a.sig)}</h2>
+  <div class="stats" style="margin-bottom:10px"><div><span>Price</span><b>${$(c.price)}</b></div><div><span>Value</span><b>${$(a.iv)}</b></div><div><span>MoS</span><b>${isFinite(a.mos)?pct(a.mos,0):"—"}</b></div><div><span>Punches left</span><b>${left}</b></div></div>
+  ${warn}
+  <div class="form-grid"><div><label>Shares (max ${maxSh})</label><input id="b_sh" type="number" min="1" step="1" value="${Math.max(0,Math.min(maxSh, Math.floor(S.cash*0.1/c.price)))}" oninput="buyPrev(${c.price})"></div>
+  <div><label>Total incl. $${s.brokerage} brokerage</label><div id="b_tot" class="num" style="padding:8px 0;font-size:18px"></div></div>
+  <div class="full"><label>Why are you buying? (your investment thesis)</label><textarea id="b_why" placeholder="e.g. Bunnings' scale gives a cost advantage; ROE above 30% with modest debt; buying 20% below my value estimate."></textarea></div></div>
+  <label class="check"><input type="checkbox" id="b_c1"> I understand how this business makes money.</label>
+  <label class="check"><input type="checkbox" id="b_c2"> I'd be happy to own it if the market closed for 10 years.</label>
+  <label class="check"><input type="checkbox" id="b_c3"> I'm buying the business, not betting on next month's share price.</label>
+  <div class="row" style="margin-top:12px"><button class="good" onclick="doBuy('${code}')">Use a punch & buy</button><button onclick="closeModal()">Cancel</button></div>`);
+  buyPrev(c.price);
+}
+function buyPrev(p){ const n=parseInt(document.getElementById("b_sh").value)||0; document.getElementById("b_tot").textContent=$(n*p+S.settings.brokerage); }
+function doBuy(code){
+  const c=S.companies[code], a=analyse(c,S.settings), s=S.settings;
+  const n=parseInt(document.getElementById("b_sh").value)||0;
+  const why=document.getElementById("b_why").value.trim();
+  if (!["b_c1","b_c2","b_c3"].every(id=>document.getElementById(id).checked)) { toast("Tick all three checklist items — that's the discipline this game rewards."); return; }
+  if (why.length<10) { toast("Write down why you're buying (at least a sentence)."); return; }
+  const cost=n*c.price+s.brokerage;
+  if (n<1 || cost>S.cash) { toast("Not enough cash for that many shares."); return; }
+  let xp=0, msgs=[];
+  if (a.sig.k==="avoid"){ xp-=150; msgs.push("−150 bought a low-quality business"); }
+  else if (a.sig.k==="sell"||a.sig.k==="over"){ xp-=75; msgs.push("−75 paid above intrinsic value"); }
+  else if (a.sig.k==="buy"||a.sig.k==="strong"){ xp+=100; msgs.push("+100 bought with a margin of safety"); unlock("mos_buy"); if(a.sig.k==="strong"){xp+=50;msgs.push("+50 strong buy");} }
+  if (why.length>=40){ xp+=20; msgs.push("+20 wrote a real thesis"); }
+  S.cash-=cost;
+  const h=S.holdings[code]||{shares:0,cost:0,firstBuy:today(),qAtBuy:a.q.score};
+  h.shares+=n; h.cost+=cost; S.holdings[code]=h;
+  S.trades.unshift({id:Date.now(),date:today(),code,side:"buy",shares:n,price:c.price,fee:s.brokerage,reason:why,mos:a.mos,q:a.q.score,xp});
+  if (xp) award(xp, `Buy ${code}`);
+  unlock("first_buy");
+  if (S.trades.filter(t=>t.reason&&t.reason.length>=40).length>=5) unlock("writer");
+  if (a.q.score>=80) unlock("wonderful");
+  snapshot(); save(); closeModal(); render();
+  toast(`Bought ${n} ${code}. <b>${sgn(xp)}${xp} XP</b><br><span class="small">${msgs.join(" · ")||"No bonus — fair price, not a bargain."}</span>`);
+}
+function openSell(code){
+  const c=S.companies[code], h=S.holdings[code], a=analyse(c,S.settings);
+  const age=daysBetween(h.firstBuy,today()); const broken = h.qAtBuy - a.q.score >= 15;
+  const hint = a.sig.k==="sell" ? `<div class="alert good">Sell zone — Mr Market is overpaying. Selling earns +120 XP.</div>`
+    : broken ? `<div class="alert good">Quality has fallen ${h.qAtBuy-a.q.score} points since you bought. Selling a broken thesis earns +60 XP.</div>`
+    : age<30 ? `<div class="alert bad">You've held this for ${age} days. Selling inside 30 days costs 100 XP — that's trading, not investing.</div>`
+    : `<div class="alert warn">No sell signal. Buffett sells rarely — selling now earns no XP${a.price<h.cost/h.shares && age<365?" and a loss within a year costs 50 XP":""}.</div>`;
+  modal(`<h2>Sell ${esc(code)} ${badge(a.sig)}</h2><p class="small">You hold ${h.shares} shares, avg cost ${$(h.cost/h.shares)}, for ${age} days. Price ${$(c.price)}, value ≈ ${$(a.iv)}.</p>${hint}
+  <div class="form-grid"><div><label>Shares to sell</label><input id="s_sh" type="number" min="1" max="${h.shares}" value="${h.shares}"></div>
+  <div class="full"><label>Why are you selling?</label><textarea id="s_why"></textarea></div></div>
+  <div class="row" style="margin-top:12px"><button class="bad" onclick="doSell('${code}')">Sell</button><button onclick="closeModal()">Cancel</button></div>`);
+}
+function doSell(code){
+  const c=S.companies[code], h=S.holdings[code], a=analyse(c,S.settings), s=S.settings;
+  const n=Math.min(h.shares, parseInt(document.getElementById("s_sh").value)||0); const why=document.getElementById("s_why").value.trim();
+  if (n<1) return;
+  const age=daysBetween(h.firstBuy,today()); const broken=h.qAtBuy-a.q.score>=15; const avg=h.cost/h.shares;
+  let xp=0, msgs=[];
+  if (age<30){ xp-=100; msgs.push("−100 sold within 30 days"); }
+  if (a.sig.k==="sell"){ xp+=120; msgs.push("+120 sold to an overexcited Mr Market"); unlock("sell_bubble"); }
+  else if (broken){ xp+=60; msgs.push("+60 sold a broken thesis"); }
+  else if (c.price<avg && age<365 && age>=30){ xp-=50; msgs.push("−50 sold at a loss without a reason"); }
+  if (why.length>=40){ xp+=20; msgs.push("+20 wrote it down"); }
+  S.cash += n*c.price - s.brokerage;
+  h.cost -= avg*n; h.shares -= n;
+  if (h.shares<=0) delete S.holdings[code];
+  S.trades.unshift({id:Date.now(),date:today(),code,side:"sell",shares:n,price:c.price,fee:s.brokerage,reason:why,mos:a.mos,q:a.q.score,xp});
+  if (xp) award(xp, `Sell ${code}`);
+  if (S.trades.filter(t=>t.reason&&t.reason.length>=40).length>=5) unlock("writer");
+  snapshot(); save(); closeModal(); render();
+  toast(`Sold ${n} ${code}. <b>${sgn(xp)}${xp} XP</b><br><span class="small">${msgs.join(" · ")||"No XP change."}</span>`);
+}
+function openDiv(code){
+  const c=S.companies[code], h=S.holdings[code];
+  modal(`<h2>Record a ${esc(code)} dividend</h2><p class="small muted">Enter the per-share amount from the company's dividend announcement. A typical half-year payment is about ${$(c.dps/2)}.</p>
+  <label>Dividend per share $</label><input id="d_ps" type="number" step="0.001" value="${(c.dps/2).toFixed(3)}">
+  <p class="small">${h.shares} shares held.</p>
+  <div class="row"><button class="good" onclick="doDiv('${code}')">Add to cash</button><button onclick="closeModal()">Cancel</button></div>`);
+}
+function doDiv(code){
+  const ps=parseFloat(document.getElementById("d_ps").value)||0, h=S.holdings[code]; if(!(ps>0)) return;
+  const amt=ps*h.shares; S.cash+=amt;
+  S.trades.unshift({id:Date.now(),date:today(),code,side:"div",amount:amt,reason:`${$(ps)}/share on ${h.shares} shares`});
+  award(10,`Dividend from ${code}`); save(); closeModal(); render(); toast(`Added ${$(amt)} in dividends from ${code}.`);
+}
+
+/* ---------- Boot ---------- */
+if (!S.snapshots.length) snapshot();
+render();
+initCloud();
+initLive();
+</script>
+</body>
+</html>

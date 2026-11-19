@@ -1,0 +1,9 @@
+{
+  "name": "Omaha ASX — Buffett Value Game",
+  "short_name": "Omaha ASX",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f4f1ea",
+  "theme_color": "#1c2f3f",
+  "icons": [{ "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+}
