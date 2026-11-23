@@ -593,7 +593,8 @@ async function hostedInit(){
     let took = false;
     if (s && s.state){
       const remote = JSON.parse(s.state);
-      if ((s.updatedAt||0) > (S.updatedAt||0) || (isPristine(S) && !isPristine(remote))){
+      if (isPristine(remote) && !isPristine(S)) { /* never swap a real game for an empty one */ }
+      else if ((s.updatedAt||0) > (S.updatedAt||0) || (isPristine(S) && !isPristine(remote))){
         S = mergeSeeds(remote); took = true; try{ localStorage.setItem(LS_KEY, JSON.stringify(S)); }catch(e){}
       }
     }
@@ -663,7 +664,7 @@ async function initCloud(){
     const snap = await Promise.race([cloud.ref.get(), timeout]);
     const data = snap && (typeof snap.data === "function" ? snap.data() : snap);
     const remote = data && data.state ? JSON.parse(data.state) : null;
-    if (remote && ((data.updatedAt||0) > (S.updatedAt||0) || (isPristine(S) && !isPristine(remote)))){
+    if (remote && !(isPristine(remote) && !isPristine(S)) && ((data.updatedAt||0) > (S.updatedAt||0) || (isPristine(S) && !isPristine(remote)))){
       S = mergeSeeds(remote); try{localStorage.setItem(LS_KEY, JSON.stringify(S));}catch(e){}
       render();
     } else if (!(remote && isPristine(S) && !isPristine(remote))) { save(); }
