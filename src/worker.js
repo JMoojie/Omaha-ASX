@@ -40,6 +40,16 @@ export default {
         let parsed;
         try { parsed = JSON.parse(body); } catch (e) { return json({ error: "Bad JSON." }, 400); }
         if (typeof parsed.state !== "string") return json({ error: "Missing state." }, 400);
+        // Safety net: never let a save with fewer trades silently replace one with more
+        // (e.g. a brand-new device uploading an empty game). Restore / Start over send force:true.
+        const prevRaw = await env.KV.get("state");
+        if (prevRaw) {
+          const count = (st) => { try { return (JSON.parse(st).trades || []).length; } catch (e) { return 0; } };
+          const before = count(JSON.parse(prevRaw).state), after = count(parsed.state);
+          if (after < before && !parsed.force)
+            return json({ error: `Refused: the saved game has ${before} trades and this one has ${after}.` }, 409);
+          if (after !== before) await env.KV.put("state_prev", prevRaw);   // one-step backup whenever trades change
+        }
         await env.KV.put("state", JSON.stringify({ state: parsed.state, updatedAt: parsed.updatedAt || Date.now() }));
         return json({ ok: true });
       }

@@ -459,7 +459,7 @@ function mergeSeeds(st){
 }
 function freshState(){
   return mergeSeeds({
-    v:VERSION, createdAt: today(), updatedAt: Date.now(),
+    v:VERSION, createdAt: today(), updatedAt: 0,
     startCash:100000, cash:100000, startDate: today(),
     index:{level:8883, date:"2026-11-17", start:8883, hist:[{d:"2026-11-17",v:8883}]},
     settings:{r:0.09, tg:0.03, mosBuy:0.25, sellPremium:0.30, brokerage:10, punches:20},
@@ -545,17 +545,26 @@ try { S = JSON.parse(localStorage.getItem(LS_KEY)) || freshState(); } catch(e){ 
 S = mergeSeeds(S);
 let cloud = {ref:null, status:"local"};
 let saveTimer = null;
-function save(){
+let forceNextSave = false;   // set by Restore / Start over, which deliberately replace the cloud save
+/* A game with no trades, holdings or XP has nothing worth keeping — never let it replace a real save. */
+function isPristine(st){ return !st || (!(st.trades||[]).length && !Object.keys(st.holdings||{}).length && !(st.xp>0)); }
+function save(force){
+  if (force) forceNextSave = true;
   S.updatedAt = Date.now();
   try { localStorage.setItem(LS_KEY, JSON.stringify(S)); } catch(e){}
   clearTimeout(saveTimer);
   saveTimer = setTimeout(async ()=>{
     if (!cloud.ref) return;
     if (cloud.ref.hosted){
-      try { await api("/api/state", {method:"PUT", body: JSON.stringify({state: JSON.stringify(S), updatedAt: S.updatedAt})}); cloud.status="synced"; }
-      catch(e){ cloud.status="error"; }
+      const force = forceNextSave; forceNextSave = false;
+      try { await api("/api/state", {method:"PUT", body: JSON.stringify({state: JSON.stringify(S), updatedAt: S.updatedAt, force})}); cloud.status="synced"; }
+      catch(e){
+        if (e && e.status === 409){ try{ const r = await api("/api/state"); if (r && r.state){ S = mergeSeeds(JSON.parse(r.state)); try{ localStorage.setItem(LS_KEY, JSON.stringify(S)); }catch(_){} cloud.status="synced"; render(); toast("⚠️ Your server has a save with more trades than this device, so it was loaded instead."); return; } }catch(_){} }
+        cloud.status="error";
+      }
       renderSideFoot(); return;
     }
+    forceNextSave = false;
     try { await cloud.ref.set({state: JSON.stringify(S), updatedAt: S.updatedAt}); cloud.status="synced"; renderSideFoot(); }
     catch(e){ cloud.status="error"; renderSideFoot(); }
   }, 1200);
@@ -581,9 +590,15 @@ async function hostedInit(){
   cloud.status = "connecting"; renderSideFoot();
   try{
     const s = await api("/api/state");
-    if (s && s.state && (s.updatedAt||0) > (S.updatedAt||0)){ S = mergeSeeds(JSON.parse(s.state)); try{ localStorage.setItem(LS_KEY, JSON.stringify(S)); }catch(e){} }
+    let took = false;
+    if (s && s.state){
+      const remote = JSON.parse(s.state);
+      if ((s.updatedAt||0) > (S.updatedAt||0) || (isPristine(S) && !isPristine(remote))){
+        S = mergeSeeds(remote); took = true; try{ localStorage.setItem(LS_KEY, JSON.stringify(S)); }catch(e){}
+      }
+    }
     cloud.ref = {hosted:true}; cloud.status = "synced";
-    if (!s || !s.state || (s.updatedAt||0) < (S.updatedAt||0)) save();
+    if (!took && !(s && s.state && isPristine(S))) save();
     await pullPrices(true);
     render();
   }catch(e){ cloud.status = e && e.code==="auth" ? "local" : "error"; renderSideFoot(); }
@@ -647,10 +662,11 @@ async function initCloud(){
     const timeout = new Promise((_,rej)=>setTimeout(()=>rej(new Error("timeout")),10000));
     const snap = await Promise.race([cloud.ref.get(), timeout]);
     const data = snap && (typeof snap.data === "function" ? snap.data() : snap);
-    if (data && data.state && (data.updatedAt||0) > (S.updatedAt||0)){
-      S = mergeSeeds(JSON.parse(data.state)); try{localStorage.setItem(LS_KEY, JSON.stringify(S));}catch(e){}
+    const remote = data && data.state ? JSON.parse(data.state) : null;
+    if (remote && ((data.updatedAt||0) > (S.updatedAt||0) || (isPristine(S) && !isPristine(remote)))){
+      S = mergeSeeds(remote); try{localStorage.setItem(LS_KEY, JSON.stringify(S));}catch(e){}
       render();
-    } else { save(); }
+    } else if (!(remote && isPristine(S) && !isPristine(remote))) { save(); }
     cloud.status = "synced"; renderSideFoot();
   } catch(e){ cloud.status = cloud.ref ? "error" : "local"; renderSideFoot(); }
 }
@@ -1257,10 +1273,10 @@ function saveSettings(){
   save(); toast("Settings saved — all signals recalculated."); render();
 }
 async function copySave(){ try{ await navigator.clipboard.writeText(JSON.stringify(S)); toast("Save copied to clipboard."); } catch(e){ document.getElementById("bk").value = JSON.stringify(S); toast("Clipboard blocked — your save is in the box; copy it manually."); } }
-function restoreSave(){ try{ const o=JSON.parse(document.getElementById("bk").value); if(!o.companies||!o.settings) throw 0; S=o; save(); toast("Save restored."); go("dashboard"); } catch(e){ toast("That doesn't look like a valid save."); } }
+function restoreSave(){ try{ const o=JSON.parse(document.getElementById("bk").value); if(!o.companies||!o.settings) throw 0; S=o; save(true); toast("Save restored."); go("dashboard"); } catch(e){ toast("That doesn't look like a valid save."); } }
 function confirmReset(){
   modal(`<h2>Start a new game?</h2><p>This wipes your portfolio, trades and XP. Your watchlist resets to the starter companies.</p>
-  <div class="row"><button class="bad" onclick="S=freshState();save();closeModal();go('dashboard')">Yes, start over</button><button onclick="closeModal()">Cancel</button></div>`);
+  <div class="row"><button class="bad" onclick="S=freshState();save(true);closeModal();go('dashboard')">Yes, start over</button><button onclick="closeModal()">Cancel</button></div>`);
 }
 
 /* ---------- Modals ---------- */
